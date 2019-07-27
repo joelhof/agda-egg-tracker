@@ -1,16 +1,19 @@
 package se.hof.agda.egg.tracker;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-@Path("/hello")
+@Path("diary")
 public class DiaryResource {
 
-    @GET
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        return "hello";
+    @Path("/entry")
+    public String createDiaryEntry(DiaryEntryDTO body) {
+        return "nr of eggs posted " + body.getEggs();
     }
+
 }
