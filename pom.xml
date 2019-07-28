@@ -13,7 +13,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -25,7 +24,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -45,8 +43,13 @@
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-test-h2</artifactId>
+      <scope>test</scope>
+    </dependency>
 
+  </dependencies>
   <build>
     <plugins>
       <plugin>
