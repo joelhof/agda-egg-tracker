@@ -1,0 +1,5 @@
+CREATE TABLE entries
+(
+    eggs INTEGER NOT NULL,
+    datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
