@@ -1,0 +1,4 @@
+"scripts": {
+  "dev": "webpack-dev-server --env.mode development",
+  "prod": "webpack --env.mode production"
+}
