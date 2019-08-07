@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="se">
+  <head>
     <meta charset="UTF-8">
     <title>Report today's egg count</title>
     <script src="webcomponents/webcomponents-loader.js"></script>
@@ -9,8 +9,11 @@
     </script>
     <script src="webcomponents/custom-elements-es5-adapter.js"></script>
     <!-- ! DO NOT REMOVE THIS COMMENT, WE NEED ITS CLOSING MARKER -->
-</head>
-<body>
-
-</body>
+  </head>
+  <body>
+    <div class="form">
+        <vaadin-text-field label="Skriv hur många ägg du fick idag" id="eggs"></vaadin-text-field>
+        <vaadin-button id="post">Spara</vaadin-button>
+    </div>
+  </body>
 </html>
