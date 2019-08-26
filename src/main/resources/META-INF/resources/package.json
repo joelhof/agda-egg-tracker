@@ -1,4 +1,17 @@
-"scripts": {
-  "dev": "webpack-dev-server --env.mode development",
-  "prod": "webpack --env.mode production"
+{
+  "scripts": {
+    "dev": "webpack-dev-server --env.mode development",
+    "prod": "webpack --env.mode production"
+  },
+  "dependencies": {
+    "@vaadin/vaadin": "^13.0.11"
+  },
+  "devDependencies": {
+    "@webcomponents/webcomponentsjs": "^2.2.10",
+    "copy-webpack-plugin": "^5.0.4",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2"
+  }
 }
