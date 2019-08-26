@@ -1,5 +1,9 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const packageJSON = require('./package.json');
+var path = require('path');
+
+console.log('Current dir ' +  __dirname);
 
 module.exports = ({ mode }) => {
     return {
@@ -19,6 +23,11 @@ module.exports = ({ mode }) => {
             }
             ])
          ],
+         output: {
+            path: path.resolve(
+                    __dirname, '../../../../../', 'target', 'classes', 'META-INF', 'resources', 'webjars'
+                    )
+         },
          devtool: mode === 'development' ? 'source-map' : 'none'
     };
 };
