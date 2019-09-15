@@ -109,7 +109,7 @@
         https://repo1.maven.org/maven2/com/github/eirslett/frontend-maven-plugin/ -->
         <version>1.7.6</version>
         <configuration>
-          <workingDirectory>src/main/resources/META-INF/resources</workingDirectory>
+          <workingDirectory>src/main/webapp</workingDirectory>
         </configuration>
         <executions>
 

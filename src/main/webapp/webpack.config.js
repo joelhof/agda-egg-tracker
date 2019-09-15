@@ -25,7 +25,7 @@ module.exports = ({ mode }) => {
          ],
          output: {
             path: path.resolve(
-                    __dirname, '../../../../../', 'target', 'classes', 'META-INF', 'resources', 'webjars'
+                    __dirname, '../../../', 'target', 'classes', 'META-INF', 'resources'
                     )
          },
          devtool: mode === 'development' ? 'source-map' : 'none'
