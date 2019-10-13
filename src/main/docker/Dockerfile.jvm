@@ -15,8 +15,15 @@
 #
 ###
 FROM fabric8/java-alpine-openjdk8-jre
-ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
 COPY target/lib/* /deployments/lib/
 COPY target/*-runner.jar /deployments/app.jar
+
+RUN adduser -s /bin/bash -G root --no-create-home --disabled-password joel \
+  && chown -R joel /deployments \
+  && chmod -R "g+rwX" /deployments \
+  && chown -R joel:root /deployments
+USER joel
+
 CMD [ "/deployments/run-java.sh" ]
