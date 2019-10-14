@@ -1,0 +1,39 @@
+####
+# This Dockerfile is used in order to build the quarkus app and create a container
+# on Heroku, using heroku.yml
+# Build the image with:
+#
+# docker build -f src/main/docker/Dockerfile.multistage.jvm -t quarkus/egg-tracker-monolith-jvm .
+#
+# Then run the container using:
+#
+# docker run -i --rm -p 8080:8080 quarkus/egg-tracker-monolith-jvm
+#
+###
+
+## Stage 1 : build with maven builder image
+FROM quay.io/quarkus/centos-quarkus-maven:19.2.0.1 AS build
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+USER root
+RUN chown -R quarkus /usr/src/app
+USER quarkus
+RUN mvn -f /usr/src/app/pom.xml clean package
+
+## Stage 2 : create the docker final image
+FROM fabric8/java-alpine-openjdk8-jre
+
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV AB_ENABLED=jmx_exporter
+ENV QUARKUS_DATASOURCE_URL=$DATABASE_URL
+
+COPY target/lib/* /deployments/lib/
+COPY target/*-runner.jar /deployments/app.jar
+
+RUN adduser -s /bin/bash -G root --no-create-home --disabled-password quarkus \
+  && chown -R quarkus /deployments \
+  && chmod -R "g+rwX" /deployments \
+  && chown -R quarkus:root /deployments
+USER joel
+
+CMD [ "/deployments/run-java.sh" ]
