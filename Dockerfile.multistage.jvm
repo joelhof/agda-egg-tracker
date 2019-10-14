@@ -22,13 +22,12 @@ RUN mvn -f /usr/src/app/pom.xml clean package
 
 ## Stage 2 : create the docker final image
 FROM fabric8/java-alpine-openjdk8-jre
-
+WORKDIR /work/
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
-ENV QUARKUS_DATASOURCE_URL=$DATABASE_URL
 
-COPY target/lib/* /deployments/lib/
-COPY target/*-runner.jar /deployments/app.jar
+COPY --from=build /usr/src/app/target/lib/* /deployments/lib/
+COPY --from=build /usr/src/app/target/*-runner.jar /deployments/app.jar
 
 RUN adduser -s /bin/bash -G root --no-create-home --disabled-password quarkus \
   && chown -R quarkus /deployments \
