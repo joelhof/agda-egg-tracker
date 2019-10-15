@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile.multistage.jvm
 run:
-  web: java -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dquarkus.datasource.url=$JDBC_DATABASE_URL -javaagent:/opt/agent-bond/agent-bond.jar=jmx_exporter{{9779:/opt/agent-bond/jmx_exporter_config.yml}} -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/app.jar
+  web: java -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dquarkus.datasource.url=jdbc:$DATABASE_URL -javaagent:/opt/agent-bond/agent-bond.jar=jmx_exporter{{9779:/opt/agent-bond/jmx_exporter_config.yml}} -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/app.jar
