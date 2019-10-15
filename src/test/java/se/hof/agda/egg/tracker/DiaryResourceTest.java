@@ -17,8 +17,8 @@ import java.sql.SQLException;
 @QuarkusTestResource(H2DatabaseTestResource.class)
 public class DiaryResourceTest {
 
-    @Inject
-    AgroalDataSource dataSource;
+//    @Inject
+//    AgroalDataSource dataSource;
 
     @Disabled
     @Test
