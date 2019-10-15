@@ -4,9 +4,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class DatasourceConfig implements ConfigSource {
@@ -46,8 +44,9 @@ public class DatasourceConfig implements ConfigSource {
 
     @Override
     public Set<String> getPropertyNames() {
-        return Set.of("quarkus.datasource.url",
-                      "quarkus.datasource.username",
-                      "quarkus.datasource.password");
+        return new HashSet<>(
+                Arrays.asList("quarkus.datasource.url",
+                              "quarkus.datasource.username",
+                              "quarkus.datasource.password"));
     }
 }
