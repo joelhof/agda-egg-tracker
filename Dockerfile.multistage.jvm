@@ -33,6 +33,6 @@ RUN adduser -s /bin/bash -G root --no-create-home --disabled-password quarkus \
   && chown -R quarkus /deployments \
   && chmod -R "g+rwX" /deployments \
   && chown -R quarkus:root /deployments
-USER joel
+USER quarkus
 
 CMD [ "/deployments/run-java.sh" ]
