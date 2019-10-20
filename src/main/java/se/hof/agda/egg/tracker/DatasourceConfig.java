@@ -26,11 +26,13 @@ public class DatasourceConfig implements ConfigSource {
 
         switch (profile) {
             case "dev":
-                properties.put("quarkus.datasource.url", "jdbc:postgresql:postgres");
-                properties.put("quarkus.datasource.username", "dev");
-                properties.put("quarkus.datasource.password", "agda");
+                System.out.println("Using dev datasource config");
+//                properties.put("quarkus.datasource.url", "jdbc:postgresql:postgres");
+//                properties.put("quarkus.datasource.username", "dev");
+//                properties.put("quarkus.datasource.password", "agda");
                 break;
-            case "test":
+            //case "test":
+            default:
                 properties.put("quarkus.datasource.driver", "org.h2.Driver");
                 properties.put("quarkus.datasource.url", "jdbc:h2:tcp://localhost/mem:dev");
                 properties.put("quarkus.datasource.username", "username-dev");
