@@ -12,19 +12,33 @@ public class DatasourceConfig implements ConfigSource {
 
     public DatasourceConfig() {
         String databaseUrl = System.getenv("DATABASE_URL");
+        System.out.println("Profile: " + System.getProperties().getProperty(
+                "quarkus.profile","not set"));
         if (databaseUrl != null) {
-            parseDatabaseUrl(databaseUrl);
+            parseHerokuDatabaseUrl(databaseUrl);
         } else
             setDefaultProperties();
     }
 
     private void setDefaultProperties() {
-        properties.put("quarkus.datasource.url", "");
-        properties.put("quarkus.datasource.username", "");
-        properties.put("quarkus.datasource.password", "");
+        String profile = System.getProperties().getProperty(
+                "quarkus.profile","prod");
+
+        switch (profile) {
+            case "dev":
+                properties.put("quarkus.datasource.url", "jdbc:postgresql:postgres");
+                properties.put("quarkus.datasource.username", "dev");
+                properties.put("quarkus.datasource.password", "agda");
+                break;
+            case "test":
+                properties.put("quarkus.datasource.driver", "org.h2.Driver");
+                properties.put("quarkus.datasource.url", "jdbc:h2:tcp://localhost/mem:dev");
+                properties.put("quarkus.datasource.username", "username-dev");
+                properties.put("quarkus.datasource.password", "agda");
+        }
     }
 
-    private void parseDatabaseUrl(String databaseUrl) {
+    private void parseHerokuDatabaseUrl(String databaseUrl) {
         try {
             URI dbUri = new URI(databaseUrl);
             String username = dbUri.getUserInfo().split(":")[0];
@@ -68,6 +82,6 @@ public class DatasourceConfig implements ConfigSource {
 
     @Override
     public int getOrdinal() {
-        return 101;
+        return 99;
     }
 }
