@@ -1,0 +1,18 @@
+
+
+.form {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: 1;
+    /* sets the height of each row */
+    grid-template-rows: 75px 75px max(768px) 1fr 30px;
+}
+
+/* Medium Screens */
+
+@media only screen and (min-width: 768px) {
+    .form {
+        margin: auto;
+        width: 50%;
+    }
+}
