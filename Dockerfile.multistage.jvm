@@ -3,7 +3,7 @@
 # on Heroku, using heroku.yml
 # Build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.multistage.jvm -t quarkus/egg-tracker-monolith-jvm .
+# docker build -f Dockerfile.multistage.jvm -t quarkus/egg-tracker-monolith-jvm .
 #
 # Then run the container using:
 #
