@@ -20,6 +20,10 @@ module.exports = ({ mode }) => {
                 context: 'node_modules/@webcomponents/webcomponentsjs',
                 from: '**/*.js',
                 to: 'webcomponents'
+            },
+            {
+                from: './*.css',
+                to: '.'
             }
             ])
          ],
