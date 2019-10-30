@@ -10,7 +10,27 @@ function initUI() {
   const addButton = document.querySelector('#post');
 
   addButton.addEventListener('click', e => {
-    console.log('You have reported ' + eggCount.value + ' eggs!');
-    eggCount.value = '';
+
+    const data = {
+        'eggs': eggCount.value,
+        'timestamp': Date.now()
+    };
+    console.log(data);
+    try {
+        const response = postEggs(data);
+        console.log(response.status);
+        eggCount.value = '';
+    } catch (error) {
+        console.log('Error, egg count not posted', error);
+    }
   });
+}
+
+async function postEggs(data) {
+    const response = await fetch("http://localhost:19080/diary/entry", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    return await response.text();
 }
