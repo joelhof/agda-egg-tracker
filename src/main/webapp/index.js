@@ -9,6 +9,15 @@ function initUI() {
   const eggCount = document.querySelector('#eggs');
   const addButton = document.querySelector('#post');
 
+  eggCount.addEventListener('change', e => {
+       const current = eggCount.value;
+       addButton.disabled = !eggCount.checkValidity();
+  });
+  eggCount.addEventListener('input', e => {
+        const current = eggCount.value;
+        addButton.disabled = !eggCount.checkValidity();
+  });
+
   addButton.addEventListener('click', e => {
 
     const data = {
@@ -18,6 +27,8 @@ function initUI() {
     console.log(data);
     try {
         const response = postEggs(data);
+        response.then()
+        .catch()
         console.log(response.status);
         eggCount.value = '';
     } catch (error) {

@@ -14,7 +14,9 @@
   </head>
   <body>
     <div class="form">
-        <vaadin-text-field label="Skriv hur många ägg du fick idag" id="eggs"></vaadin-text-field>
+        <vaadin-text-field label="Skriv hur många ägg du fick idag" id="eggs"
+                           clear-button-visible prevent-invalid-input required
+                           placeholder="0" pattern="^[0-9]+$"></vaadin-text-field>
         <vaadin-button id="post" disabled="true">Spara</vaadin-button>
     </div>
   </body>
