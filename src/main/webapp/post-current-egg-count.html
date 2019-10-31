@@ -2,6 +2,7 @@
 <html lang="se">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Report today's egg count</title>
     <link rel="stylesheet" type="text/css" href="current-egg-count.css">
     <script src="webcomponents/webcomponents-loader.js"></script>
@@ -14,7 +15,7 @@
   <body>
     <div class="form">
         <vaadin-text-field label="Skriv hur många ägg du fick idag" id="eggs"></vaadin-text-field>
-        <vaadin-button id="post">Spara</vaadin-button>
+        <vaadin-button id="post" disabled="true">Spara</vaadin-button>
     </div>
   </body>
 </html>
