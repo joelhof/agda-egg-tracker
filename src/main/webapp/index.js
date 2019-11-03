@@ -9,16 +9,22 @@ window.addEventListener('load', () => {
 function initUI() {
   const notification = document.querySelector('vaadin-notification');
 
-  notification.renderer = function(root, n) {
-      console.log('render notification', n);
+  notification.renderer = function(root, n) {  
     // Check if there is a content generated with the previous renderer call not to recreate it.
     if (root.firstElementChild) {
       return;
     }
     const container = window.document.createElement('div');
-    const notificationMessage = window.document.createElement('b');
-    notificationMessage.textContent = n.error;
-    container.appendChild(notificationMessage);
+    
+    const header = window.document.createElement('b');
+    header.textContent = n.header;
+    const br = window.document.createElement('br');
+    const details = window.document.createElement('a');
+    details.textContent = n.detailMessage;
+
+    container.appendChild(header);
+    container.appendChild(br);
+    container.appendChild(details);
     root.appendChild(container);
   }
 
@@ -35,14 +41,17 @@ function initUI() {
             console.log(data);
             try {
                 const response = postEggs(data);
-                response.then()
+                response.then(resp => {
+                    console.log(resp.status);
+                    showNotification(notification, 'Allt gick bra!', resp)
+                    eggCount.value = '';
+                }
+                )
                     .catch(error => {
-                        notification.error = error;
-                        notification.open();
+                        showNotification(notification, 'Åh nej! Något gick fel\n', error);
                         console.log("show notification", error, " notification: ", notification);
                     } );
-                console.log(response.status);
-                eggCount.value = '';
+                
             }
             catch (error) {
                 console.log('Error, egg count not posted', error);
@@ -63,6 +72,12 @@ function initUI() {
         });
         return eggCount;
     }
+}
+
+function showNotification(notification, header, detailedMessage) {
+    notification.header = header;
+    notification.detailMessage = detailedMessage;
+    notification.open();
 }
 
 async function postEggs(data) {
