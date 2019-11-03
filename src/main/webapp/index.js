@@ -42,15 +42,14 @@ function initUI() {
             try {
                 const response = postEggs(data);
                 response.then(resp => {
-                    console.log(resp.status);
                     showNotification(notification, 'Allt gick bra!', resp)
                     eggCount.value = '';
                 }
                 )
-                    .catch(error => {
-                        showNotification(notification, 'Åh nej! Något gick fel\n', error);
-                        console.log("show notification", error, " notification: ", notification);
-                    } );
+                .catch(error => {
+                    showNotification(notification, 'Åh nej! Något gick fel', error);
+                    console.log("show notification", error, " notification: ", notification);
+                } );
                 
             }
             catch (error) {
