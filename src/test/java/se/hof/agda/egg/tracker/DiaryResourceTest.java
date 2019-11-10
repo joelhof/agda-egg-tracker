@@ -4,13 +4,20 @@ import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.*;
+import java.time.Instant;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @Transactional
@@ -20,32 +27,34 @@ public class DiaryResourceTest {
     @Inject
     AgroalDataSource dataSource;
 
-    @Disabled
     @Test
     public void testPOSTDiaryEntry() throws IOException, SQLException {
-/*        String validDiaryEntry = Files.readString(Paths.get("src/test/resources/POST-valid-diary.json"));
+
+        String validDiaryEntry = new String(Files.readAllBytes(
+                Paths.get("src/test/resources/POST-valid-diary.json")));
         given().body(validDiaryEntry)
                .contentType(ContentType.JSON)
-        .when().post("diary/entry")
-        .then().assertThat().statusCode(200);
+               .when().post("diary/entry")
+               .then().assertThat().statusCode(200);
 
-        String selectDiaryEntry = "SELECT * FROM entries WHERE eggs=? AND timestamp=?";
+        String selectDiaryEntry = "SELECT * FROM diary.entries WHERE eggs=? AND datetime=?";
         try (Connection dbConn = dataSource.getConnection();
              PreparedStatement ps = dbConn.prepareStatement(selectDiaryEntry);
         ) {
-            ps.setInt(1,6);
-            ps.setLong(2, 1234L);
+            ps.setInt(1, 6);
+            Timestamp expectedTimestamp = Timestamp.from(Instant.ofEpochMilli(1564000592095L));
+            ps.setTimestamp(2, expectedTimestamp);
             ResultSet rs = ps.executeQuery();
             int count = 0;
             while (rs.next()) {
-               int actualEggs = rs.getInt("eggs");
-               long actualTimestamp = rs.getLong("datetime");
-               assertEquals(6, actualEggs);
-               assertEquals(1234L, actualTimestamp);
-               count++;
+                int actualEggs = rs.getInt("eggs");
+                Timestamp actualTimestamp = rs.getTimestamp("datetime");
+                assertEquals(6, actualEggs);
+                assertEquals(expectedTimestamp, actualTimestamp);
+                count++;
             }
             assertEquals(1, count);
-        }*/
+        }
     }
 
 }
