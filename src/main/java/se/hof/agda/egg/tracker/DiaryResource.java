@@ -4,16 +4,15 @@ import io.agroal.api.AgroalDataSource;
 import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 
 @Path("diary")
 public class DiaryResource {
@@ -46,6 +45,13 @@ public class DiaryResource {
             e.printStackTrace();
             throw new RuntimeException("Egg diary was not updated. ", e);
         }
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/entries")
+    public List<DiaryEntryDTO> getEntries() {
+        return Collections.EMPTY_LIST;
     }
 
 }

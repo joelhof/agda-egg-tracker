@@ -5,6 +5,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -57,4 +58,30 @@ public class DiaryResourceTest {
         }
     }
 
+    @Test
+    public void testGETDiaryEntryByDate() {
+        try {
+            setupDb();
+
+            Matcher matcher = null;
+            given().accept(ContentType.JSON)
+                   .when().get("diary/entries?date=2019-11-11")
+                   .then().assertThat().statusCode(200);
+                   //.and().assertThat().body(matcher);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void setupDb() throws SQLException {
+        String insertData = "INSERT INTO diary.entries VALUES(?,?)";
+        try (Connection dbConn = dataSource.getConnection();
+             PreparedStatement ps = dbConn.prepareStatement(insertData)) {
+            ps.setInt(1, 3);
+            ps.setTimestamp(2,
+                            Timestamp.from(Instant.ofEpochMilli(1573470192000L)));
+            ps.executeUpdate();
+        }
+    }
 }
