@@ -10,6 +10,7 @@ import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,14 +48,16 @@ public class DiaryResource {
     }
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/entries")
-    public String getEntries(
+    public List<DiaryEntryDTO> getEntries(
             @QueryParam("date")String dateString) {
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
         System.out.println(date);
-        String sql = "SELECT * FROM diary.entries WHERE date(datetime) =?";
-        String response = "";
+        String sql = "SELECT * FROM diary.entries" +
+                " WHERE date(datetime) =?" +
+                " ORDER BY datetime DESC";
+        List<DiaryEntryDTO> response = new ArrayList<>();
         try (
                 Connection dbConn = eggDataSource.getConnection();
                 PreparedStatement ps = dbConn.prepareStatement(sql);
@@ -65,7 +68,10 @@ public class DiaryResource {
                 int eggs = rs.getInt("eggs");
                 Timestamp ts = rs.getTimestamp("datetime");
                 System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
-                response = String.valueOf(eggs);
+                DiaryEntryDTO entry = new DiaryEntryDTO();
+                entry.setEggs(eggs);
+                entry.setTimestamp(ts.getTime());
+                response.add(entry);
             }
         } catch (SQLException e) {
             e.printStackTrace();
