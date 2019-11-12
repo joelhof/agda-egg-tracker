@@ -6,11 +6,10 @@ import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,10 +47,33 @@ public class DiaryResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Path("/entries")
-    public List<DiaryEntryDTO> getEntries() {
-        return Collections.EMPTY_LIST;
+    public String getEntries(
+            @QueryParam("date")String dateString) {
+        LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
+        System.out.println(date);
+        String sql = "SELECT * FROM diary.entries WHERE date(datetime) =?";
+        String response = "";
+        try (
+                Connection dbConn = eggDataSource.getConnection();
+                PreparedStatement ps = dbConn.prepareStatement(sql);
+                ) {
+            ps.setDate(1, Date.valueOf(date));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int eggs = rs.getInt("eggs");
+                Timestamp ts = rs.getTimestamp("datetime");
+                System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
+                response = String.valueOf(eggs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not fetch eggs for date= "
+                                               + date.format(DateTimeFormatter.ISO_DATE));
+        }
+
+        return response;
     }
 
 }
