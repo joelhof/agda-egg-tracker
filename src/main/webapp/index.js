@@ -12,8 +12,11 @@ function initUI() {
   notification.renderer = function(root, n) {  
     // Check if there is a content generated with the previous renderer call not to recreate it.
     if (root.firstElementChild) {
+      const detailedMessage = root.firstElementChild.getElementsByTagName('a')[0];
+      detailedMessage.textContent = n.detailMessage;
       return;
     }
+
     const container = window.document.createElement('div');
     
     const header = window.document.createElement('b');
@@ -42,7 +45,7 @@ function initUI() {
             try {
                 const response = postEggs(data);
                 response.then(resp => {
-                    showNotification(notification, 'Allt gick bra!', resp)
+                    showNotification(notification, 'Allt gick bra!', resp);
                     eggCount.value = '';
                 }
                 )
