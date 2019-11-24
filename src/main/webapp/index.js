@@ -7,8 +7,8 @@ window.addEventListener('load', () => {
 });
 
 function initUI() {
+  console.log(window.location.origin);
   const notification = document.querySelector('vaadin-notification');
-
   notification.renderer = function(root, n) {  
     // Check if there is a content generated with the previous renderer call not to recreate it.
     if (root.firstElementChild) {
@@ -18,7 +18,6 @@ function initUI() {
     }
 
     const container = window.document.createElement('div');
-    
     const header = window.document.createElement('b');
     header.textContent = n.header;
     const br = window.document.createElement('br');
@@ -41,7 +40,6 @@ function initUI() {
                 'eggs': eggCount.value,
                 'timestamp': Date.now()
             };
-            console.log(data);
             try {
                 const response = postEggs(data);
                 response.then(resp => {
@@ -83,7 +81,8 @@ function showNotification(notification, header, detailedMessage) {
 }
 
 async function postEggs(data) {
-    const response = await fetch("http://localhost:19080/diary/entry", {
+    const host = window.location.origin;
+    const response = await fetch(host + "/diary/entry", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
