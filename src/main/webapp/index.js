@@ -4,6 +4,7 @@ import '@vaadin/vaadin-notification';
 
 window.addEventListener('load', () => {
      initUI();
+     fetchDiaryEntries();
 });
 
 function initUI() {
@@ -88,4 +89,31 @@ async function postEggs(data) {
         body: JSON.stringify(data)
     });
     return await response.text();
+}
+
+function fetchDiaryEntries() {
+    const response = fetchTodaysEntries();
+    response
+        .then(errorHandler())
+        .then(r => r.json())
+        .then(r => console.log("Succes!", r))
+        .catch(error => console.log("Failed!", error));
+}
+
+function errorHandler() {
+    return r => {
+        if (!r.ok) {
+            throw Error(r.status, r.text());
+        }
+    };
+}
+
+async function fetchTodaysEntries() {
+    const host = window.location.origin;
+    const response = await fetch(host + "/diary/entries?date=2019-11-24", {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+    });
+
+    return response;
 }
