@@ -1,17 +1,18 @@
 package se.hof.agda.egg.tracker;
 
 import io.agroal.api.AgroalDataSource;
+import org.jboss.resteasy.annotations.cache.NoCache;
 import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Path("diary")
@@ -28,8 +29,7 @@ public class DiaryResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/entry")
     public String createDiaryEntry(DiaryEntryDTO body) {
-       // System.out.println(flyway.info().current().getVersion().toString());
-
+        System.out.println("Payload: " + body.toString());
         String sql = "INSERT INTO diary.entries (eggs, datetime)" +
                 "values (?,?)";
         try (
@@ -52,6 +52,8 @@ public class DiaryResource {
     @Path("/entries")
     public List<DiaryEntryDTO> getEntries(
             @QueryParam("date")String dateString) {
+        assertParams(dateString);
+
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
         System.out.println(date);
         String sql = "SELECT * FROM diary.entries" +
@@ -80,6 +82,12 @@ public class DiaryResource {
         }
 
         return response;
+    }
+
+    private void assertParams(@QueryParam("date") String dateString) {
+        if (dateString == null)
+            throw new WebApplicationException("Query parameter 'date' must be set",
+                                              Response.Status.BAD_REQUEST);
     }
 
 }
