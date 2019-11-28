@@ -43,8 +43,12 @@ function initUI() {
             };
             try {
                 const response = postEggs(data);
-                response.then(resp => {
-                    showNotification(notification, 'Allt gick bra!', resp);
+                response
+                .then(errorHandler())
+                .then(resp => resp.text())
+                .then(text => {
+                    showNotification(notification, 'Allt gick bra!', text);
+                    updateCurrentEggCount(eggCount.value);
                     eggCount.value = '';
                 }
                 )
@@ -88,7 +92,7 @@ async function postEggs(data) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    return await response.text();
+    return response;
 }
 
 function fetchDiaryEntries() {
@@ -96,8 +100,28 @@ function fetchDiaryEntries() {
     response
         .then(errorHandler())
         .then(r => r.json())
-        .then(r => console.log("Succes!", r))
-        .catch(error => console.log("Failed!", error));
+        .then(entries => {
+            console.log("Succes!", entries);
+            const currentCount = entries
+                .map(entry => entry.eggs)
+                .find(eggs => eggs);
+            console.log('current count', currentCount);
+            if (currentCount) {
+                updateCurrentEggCount(currentCount);
+            }
+            
+        })
+        .catch(error => {
+            console.log("Failed!", error);
+        });
+}
+
+function updateCurrentEggCount(currentCount) {
+    const infoText = document.querySelector('#current-egg-count');
+    infoText.textContent = currentCount + ` ägg är rapporterade idag.`;
+    const currentCountLabel = `Ange ett nytt antal ägg för att ersätta`;
+    const eggCount = document.querySelector('#eggs');
+    eggCount.setAttribute('label', currentCountLabel);
 }
 
 function errorHandler() {
@@ -105,6 +129,7 @@ function errorHandler() {
         if (!r.ok) {
             throw Error(r.status, r.text());
         }
+        return r;
     };
 }
 
