@@ -135,7 +135,8 @@ function errorHandler() {
 
 async function fetchTodaysEntries() {
     const host = window.location.origin;
-    const response = await fetch(host + "/diary/entries?date=2019-11-24", {
+    const today = new Date().toISOString().substring(0,10);
+    const response = await fetch(host + "/diary/entries?date=" + today, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
     });
