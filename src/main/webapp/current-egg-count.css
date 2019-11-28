@@ -1,8 +1,12 @@
 
-
+.info-banner {
+    color: var(--lumo-secondary-text-color);
+    font-family: var(--lumo-font-family);
+    font-size: var(--lumo-font-size-s);
+}
 .form {
     display: grid;
     grid-gap: 20px;
-    grid-template-columns: 1;
+    grid-template-columns: 1fr;
     grid-template-rows: auto;
 }
