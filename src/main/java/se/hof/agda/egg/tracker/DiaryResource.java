@@ -13,7 +13,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("diary")
 public class DiaryResource {
@@ -88,6 +90,19 @@ public class DiaryResource {
     @Path("/entries")
     @Consumes(MediaType.TEXT_PLAIN)
     public String addEntriesFromFile(String csvBody) {
+        String[] lines = csvBody.split("\\r?\\n");
+        String[] metaData = lines[0].split(",");
+        List<Integer> eggCounts = Arrays
+                .stream(lines)
+                .skip(1)
+                .map(s -> s.trim().replace(",", ""))
+                .map(s -> s.isEmpty() ? null : Integer.valueOf(s))
+                .collect(Collectors.toList());
+
+        LocalDate startDate = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
+        LocalDate endData = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
+
+
         return Response.accepted().build().toString();
     }
 
