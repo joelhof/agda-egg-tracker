@@ -1,7 +1,7 @@
 package se.hof.agda.egg.tracker;
 
 import io.agroal.api.AgroalDataSource;
-import org.jboss.resteasy.annotations.cache.NoCache;
+import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
 import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 
 import javax.inject.Inject;
@@ -9,21 +9,23 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.*;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.stream;
+
 @Path("diary")
 public class DiaryResource {
-    
+
+    public static final String INSERT_DIARY_ENTRY = "INSERT INTO diary.entries (eggs, datetime)" +
+            "values (?,?)";
     @Inject
     AgroalDataSource eggDataSource;
 
@@ -36,14 +38,10 @@ public class DiaryResource {
     @Path("/entry")
     public String createDiaryEntry(DiaryEntryDTO body) {
         System.out.println("Payload: " + body.toString());
-        String sql = "INSERT INTO diary.entries (eggs, datetime)" +
-                "values (?,?)";
         try (
                 Connection dbConnection = eggDataSource.getConnection();
-                PreparedStatement ps = dbConnection.prepareStatement(sql)) {
-            ps.setInt(1, body.getEggs());
-            Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(body.getTimestamp()));
-            ps.setTimestamp(2, timestamp);
+                PreparedStatement ps = dbConnection.prepareStatement(INSERT_DIARY_ENTRY)) {
+            addDiaryEntry(body, ps);
             int res = ps.executeUpdate();
             ps.close();
             return "nr of eggs posted " + body.getEggs();
@@ -51,6 +49,12 @@ public class DiaryResource {
             e.printStackTrace();
             throw new RuntimeException("Egg diary was not updated. ", e);
         }
+    }
+
+    private void addDiaryEntry(DiaryEntryDTO body, PreparedStatement ps) throws SQLException {
+        ps.setInt(1, body.getEggs());
+        Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(body.getTimestamp()));
+        ps.setTimestamp(2, timestamp);
     }
 
     @GET
@@ -106,18 +110,18 @@ public class DiaryResource {
     @POST
     @Path("/entries")
     @Consumes(MediaType.TEXT_PLAIN)
-    public String addEntriesFromFile(String csvBody) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public BatchResponseDTO addEntriesFromFile(String csvBody) {
         String[] lines = csvBody.split("\\r?\\n");
         String[] metaData = lines[0].split(",");
-        List<Integer> eggCounts = Arrays
-                .stream(lines)
+        List<Integer> eggCounts = stream(lines)
                 .skip(1)
                 .map(s -> s.trim().replace(",", ""))
                 .map(s -> s.isEmpty() ? null : Integer.valueOf(s))
                 .collect(Collectors.toList());
 
         LocalDate startDate = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
-        LocalDate endData = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
+        LocalDate endDate = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
 
         AtomicInteger dateCounter = new AtomicInteger(0);
         List<DiaryEntryDTO> batch = eggCounts.stream()
@@ -136,14 +140,30 @@ public class DiaryResource {
                  }).filter(Objects::nonNull)
                  .collect(Collectors.toList());
 
-        return Response.accepted().build().toString();
+        return batchInsertEntries(batch);
     }
 
+    private BatchResponseDTO batchInsertEntries(List<DiaryEntryDTO> batch) {
+        try (
+                Connection dbConnection = eggDataSource.getConnection();
+                PreparedStatement ps = dbConnection.prepareStatement(INSERT_DIARY_ENTRY)) {
+            for (DiaryEntryDTO diaryEntryDTO : batch) {
+                addDiaryEntry(diaryEntryDTO, ps);
+                ps.addBatch();
+            }
+
+            int[] res = ps.executeBatch();
+
+            return BatchResponseDTO.from(batch, res);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Batch update failed.", e);
+        }
+    }
 
     private void assertParams(@QueryParam("date") String dateString) {
         if (dateString == null)
             throw new WebApplicationException("Query parameter 'date' must be set",
                                               Response.Status.BAD_REQUEST);
     }
-
 }
