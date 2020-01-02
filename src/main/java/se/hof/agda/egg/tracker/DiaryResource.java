@@ -84,6 +84,14 @@ public class DiaryResource {
         return response;
     }
 
+    @POST
+    @Path("/entries")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public String addEntriesFromFile(String csvBody) {
+        return Response.accepted().build().toString();
+    }
+
+
     private void assertParams(@QueryParam("date") String dateString) {
         if (dateString == null)
             throw new WebApplicationException("Query parameter 'date' must be set",
