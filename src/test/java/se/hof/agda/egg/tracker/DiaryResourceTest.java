@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -59,7 +60,20 @@ public class DiaryResourceTest {
     }
 
     @Test
-    public void testGETDiaryEntryByDate() {
+    public void testPostCsv() throws IOException {
+
+        String fakeBatchFile = new String(Files.readAllBytes(
+                Paths.get("src/test/resources/batch-example.csv")
+        ));
+        given().body(fakeBatchFile)
+               .contentType(MediaType.TEXT_PLAIN)
+               .when()
+               .post("diary/entries")
+               .then().assertThat().statusCode(200);
+    }
+
+//    @Test
+//    public void testGETDiaryEntryByDate() {
 //        try {
 //            setupDb();
 //
@@ -71,8 +85,8 @@ public class DiaryResourceTest {
 //        } catch (SQLException e) {
 //            e.printStackTrace();
 //        }
-
-    }
+//
+//    }
 
     private void setupDb() throws SQLException {
         String insertData = "INSERT INTO diary.entries VALUES(?,?)";
