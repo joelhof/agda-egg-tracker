@@ -9,12 +9,16 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.*;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Path("diary")
@@ -86,6 +90,19 @@ public class DiaryResource {
         return response;
     }
 
+    /**
+     * POST a CSV-file with egg counts. First line must be start date and
+     * end date, in ISO-format.
+     * The rest of the file is a list of the reported egg counts.
+     * Since there is no timestamp information available batch reporting
+     * will use 00:00 as the timestamp.
+     * This means that batch reporting will NOT overwrite already reported counts.
+     * Subsequent batch reports WILL replace already existing batch reported
+     * egg counts.
+     * Missing egg counts are ignored.
+     * @param csvBody
+     * @return
+     */
     @POST
     @Path("/entries")
     @Consumes(MediaType.TEXT_PLAIN)
@@ -102,6 +119,22 @@ public class DiaryResource {
         LocalDate startDate = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
         LocalDate endData = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
 
+        AtomicInteger dateCounter = new AtomicInteger(0);
+        List<DiaryEntryDTO> batch = eggCounts.stream()
+                 .map(count -> {
+                     LocalDate date = startDate.plusDays(
+                             dateCounter.getAndIncrement());
+                     if (count != null) {
+                         DiaryEntryDTO result = new DiaryEntryDTO();
+                         result.setEggs(count);
+                         result.setTimestamp(date.atStartOfDay()
+                                                 .toInstant(ZoneOffset.UTC)
+                                                 .toEpochMilli());
+                         return result;
+                     }
+                     return null;
+                 }).filter(Objects::nonNull)
+                 .collect(Collectors.toList());
 
         return Response.accepted().build().toString();
     }
