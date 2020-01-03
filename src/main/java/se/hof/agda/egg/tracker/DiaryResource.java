@@ -112,6 +112,7 @@ public class DiaryResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
     public BatchResponseDTO addEntriesFromFile(String csvBody) {
+        System.out.println("Batch file recieved:" + csvBody);
         String[] lines = csvBody.split("\\r?\\n");
         String[] metaData = lines[0].split(",");
         List<Integer> eggCounts = stream(lines)
@@ -144,9 +145,12 @@ public class DiaryResource {
     }
 
     private BatchResponseDTO batchInsertEntries(List<DiaryEntryDTO> batch) {
+        String batchInsertDiaryEntry = INSERT_DIARY_ENTRY
+                + "ON CONFLICT ON CONSTRAINT no_duplicates"
+                + " DO UPDATE SET eggs = EXCLUDED.eggs;";
         try (
                 Connection dbConnection = eggDataSource.getConnection();
-                PreparedStatement ps = dbConnection.prepareStatement(INSERT_DIARY_ENTRY)) {
+                PreparedStatement ps = dbConnection.prepareStatement(batchInsertDiaryEntry)) {
             for (DiaryEntryDTO diaryEntryDTO : batch) {
                 addDiaryEntry(diaryEntryDTO, ps);
                 ps.addBatch();
