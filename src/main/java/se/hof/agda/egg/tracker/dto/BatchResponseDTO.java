@@ -3,6 +3,7 @@ package se.hof.agda.egg.tracker.dto;
 import java.sql.PreparedStatement;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -11,9 +12,9 @@ import static java.time.ZoneOffset.UTC;
 
 public class BatchResponseDTO {
 
-    int eggsReported;
+    private int eggsReported;
 
-    List<LocalDate> failed;
+    private List<LocalDate> failed;
 
     public static BatchResponseDTO from(List<DiaryEntryDTO> entries,
                                         int[] result) {
@@ -34,9 +35,29 @@ public class BatchResponseDTO {
                    int res = result[counter.getAndIncrement()];
                    return res == PreparedStatement.EXECUTE_FAILED;
                }).map(entry -> entry.getTimestamp())
-               .map(millis -> LocalDate.ofInstant(Instant.ofEpochMilli(millis), UTC))
+               .map(millis -> toDate(millis))
                .collect(Collectors.toList());
         return dto;
     }
 
+    private static LocalDate toDate(Long millis) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), UTC)
+                            .toLocalDate();
+    }
+
+    public int getEggsReported() {
+        return eggsReported;
+    }
+
+    public void setEggsReported(int eggsReported) {
+        this.eggsReported = eggsReported;
+    }
+
+    public List<LocalDate> getFailed() {
+        return failed;
+    }
+
+    public void setFailed(List<LocalDate> failed) {
+        this.failed = failed;
+    }
 }
