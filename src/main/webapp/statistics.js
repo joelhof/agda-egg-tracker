@@ -34,5 +34,5 @@ async function fetchEntries(start, end) {
 }
 
 function toISODate(date) {
-    return date.toISOString.substring(0,10);
+    return date.toISOString().substring(0,10);
 }
