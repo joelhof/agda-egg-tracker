@@ -9,12 +9,18 @@ module.exports = ({ mode }) => {
     return {
         mode,
         entry: {
-                app: ['./index.js']
+                app: './index.js',
+                statistics: './statistics.js'
         },
         plugins: [
             new HtmlWebpackPlugin({
                 template: './post-current-egg-count.html'
             }),
+             new HtmlWebpackPlugin({
+                template: './statistics.html',
+                filename: 'statistics.html',
+                chunks: ['statistics']
+             }),
             new CopyWebpackPlugin([
             {
                 context: 'node_modules/@webcomponents/webcomponentsjs',
