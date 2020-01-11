@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,36 +62,77 @@ public class DiaryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/entries")
     public List<DiaryEntryDTO> getEntries(
-            @QueryParam("date")String dateString) {
-        assertParams(dateString);
+            @QueryParam("date")String dateString,
+            @QueryParam("from")String fromString,
+            @QueryParam("to")String toString) {
+        assertParams(fromString, toString, dateString);
 
+        List<DiaryEntryDTO> response;
+        if (Objects.nonNull(dateString)) {
+            response = fetchEntriesByDate(dateString);
+        } else {
+            response = fetchEntriesByInterval(fromString, toString);
+        }
+
+        return response;
+    }
+
+    private List<DiaryEntryDTO> fetchEntriesByInterval(@QueryParam("from") String fromString, @QueryParam("to") String toString) {
+        LocalDate from = LocalDate.parse(fromString, DateTimeFormatter.ISO_DATE);
+        LocalDate to = LocalDate.parse(toString, DateTimeFormatter.ISO_DATE);
+        String sql = " SELECT * FROM diary.entries" +
+                " WHERE date(datetime) >=? AND date(datetime) <=?;";
+
+//                    "SELECT DISTINCT ON (date(datetime))" +
+//                    " id, datetime, eggs" +
+//                    " FROM   diary.entries" +
+//                    " ORDER  BY date(datetime), id;";
+        try (
+                Connection dbConn = eggDataSource.getConnection();
+                PreparedStatement ps = dbConn.prepareStatement(sql);
+        ) {
+            ps.setDate(1, Date.valueOf(from));
+            ps.setDate(2, Date.valueOf(to));
+            return mapToDTO(ps);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(String.format("Could not fetch eggs for from={} and to={} ",
+                                               from.format(DateTimeFormatter.ISO_DATE),
+                                                     to.format(DateTimeFormatter.ISO_DATE)));
+        }
+    }
+
+    private List<DiaryEntryDTO> fetchEntriesByDate(@QueryParam("date") String dateString) {
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
         System.out.println(date);
         String sql = "SELECT * FROM diary.entries" +
                 " WHERE date(datetime) =?" +
                 " ORDER BY datetime DESC";
-        List<DiaryEntryDTO> response = new ArrayList<>();
         try (
                 Connection dbConn = eggDataSource.getConnection();
                 PreparedStatement ps = dbConn.prepareStatement(sql);
-                ) {
+        ) {
             ps.setDate(1, Date.valueOf(date));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                int eggs = rs.getInt("eggs");
-                Timestamp ts = rs.getTimestamp("datetime");
-                System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
-                DiaryEntryDTO entry = new DiaryEntryDTO();
-                entry.setEggs(eggs);
-                entry.setTimestamp(ts.getTime());
-                response.add(entry);
-            }
+            return mapToDTO(ps);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not fetch eggs for date= "
                                                + date.format(DateTimeFormatter.ISO_DATE));
         }
+    }
 
+    private List<DiaryEntryDTO> mapToDTO(PreparedStatement ps) throws SQLException {
+        List<DiaryEntryDTO> response = new ArrayList<>();
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int eggs = rs.getInt("eggs");
+            Timestamp ts = rs.getTimestamp("datetime");
+            System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
+            DiaryEntryDTO entry = new DiaryEntryDTO();
+            entry.setEggs(eggs);
+            entry.setTimestamp(ts.getTime());
+            response.add(entry);
+        }
         return response;
     }
 
@@ -165,9 +207,20 @@ public class DiaryResource {
         }
     }
 
-    private void assertParams(@QueryParam("date") String dateString) {
-        if (dateString == null)
-            throw new WebApplicationException("Query parameter 'date' must be set",
+    private void assertParams(String from, String to, String dateString) {
+        if (dateString == null && from == null && to == null)
+            throw new WebApplicationException("Query parameter 'date' or 'from' and 'to' must be set",
+                                              Response.Status.BAD_REQUEST);
+        if (from != null && to == null)
+            throw new WebApplicationException("Query parameter 'to' must be set",
+                                              Response.Status.BAD_REQUEST);
+        if (to != null && from == null)
+            throw new WebApplicationException("Query parameter 'from' must be set",
+                                              Response.Status.BAD_REQUEST);
+        if (from != null && to != null && dateString != null)
+            throw new WebApplicationException("Provide query parameter 'date' or" +
+                                                      " parameters 'from' and 'to'" +
+                                                      "not all three",
                                               Response.Status.BAD_REQUEST);
     }
 }
