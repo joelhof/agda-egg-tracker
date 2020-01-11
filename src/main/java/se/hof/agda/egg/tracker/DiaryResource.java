@@ -80,23 +80,24 @@ public class DiaryResource {
     private List<DiaryEntryDTO> fetchEntriesByInterval(@QueryParam("from") String fromString, @QueryParam("to") String toString) {
         LocalDate from = LocalDate.parse(fromString, DateTimeFormatter.ISO_DATE);
         LocalDate to = LocalDate.parse(toString, DateTimeFormatter.ISO_DATE);
-        String sql = " SELECT * FROM diary.entries" +
-                " WHERE date(datetime) >=? AND date(datetime) <=?;";
-
-//                    "SELECT DISTINCT ON (date(datetime))" +
-//                    " id, datetime, eggs" +
-//                    " FROM   diary.entries" +
-//                    " ORDER  BY date(datetime), id;";
+        String selectLatestEntry =
+                " SELECT DISTINCT ON (date(datetime)) datetime, eggs" +
+                " FROM diary.entries" +
+                " ORDER BY date(datetime) DESC, datetime DESC";
+        String selectEntriesInInterval = "" +
+                "SELECT datetime, eggs " +
+                "FROM (" + selectLatestEntry + ") AS latestEntry" +
+                " WHERE date(datetime) >=? AND date(datetime) <=?";
         try (
                 Connection dbConn = eggDataSource.getConnection();
-                PreparedStatement ps = dbConn.prepareStatement(sql);
+                PreparedStatement ps = dbConn.prepareStatement(selectEntriesInInterval);
         ) {
             ps.setDate(1, Date.valueOf(from));
             ps.setDate(2, Date.valueOf(to));
             return mapToDTO(ps);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(String.format("Could not fetch eggs for from={} and to={} ",
+            throw new RuntimeException(String.format("Could not fetch eggs for from=%s and to=%s ",
                                                from.format(DateTimeFormatter.ISO_DATE),
                                                      to.format(DateTimeFormatter.ISO_DATE)));
         }
