@@ -4,11 +4,12 @@
     "prod": "webpack --env.mode production"
   },
   "dependencies": {
-    "@vaadin/vaadin": "^13.0.11"
+    "@vaadin/vaadin": "^13.0.11",
+    "chart.js": "^2.9.3"
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.2.10",
-    "copy-webpack-plugin": "^5.0.4",
+    "copy-webpack-plugin": "^5.1.1",
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
