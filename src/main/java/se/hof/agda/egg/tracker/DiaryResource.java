@@ -83,7 +83,7 @@ public class DiaryResource {
         String selectLatestEntry =
                 " SELECT DISTINCT ON (date(datetime)) datetime, eggs" +
                 " FROM diary.entries" +
-                " ORDER BY date(datetime) DESC, datetime DESC";
+                " ORDER BY date(datetime) ASC, datetime DESC";
         String selectEntriesInInterval = "" +
                 "SELECT datetime, eggs " +
                 "FROM (" + selectLatestEntry + ") AS latestEntry" +
@@ -165,7 +165,7 @@ public class DiaryResource {
                 .collect(Collectors.toList());
 
         LocalDate startDate = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
-        LocalDate endDate = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
+        //LocalDate endDate = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
 
         AtomicInteger dateCounter = new AtomicInteger(0);
         List<DiaryEntryDTO> batch = eggCounts.stream()
