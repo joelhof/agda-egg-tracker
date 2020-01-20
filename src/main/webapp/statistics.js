@@ -1,12 +1,29 @@
+import Chart from 'chart.js';
 
 window.addEventListener('load', () => {
-     initUI();
+     //initUI();
      fetchDiaryEntries();
 });
 
-function initUI() {
-    console.log('init statistics ui')
-
+function displayChart(entries) {
+    console.log('init statistics ui');
+    var ctx = document.getElementById("egg-chart");
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: entries.map(e => new Date(e.timestamp))
+                           .map(d => toISODate(d)),
+            
+            datasets: [
+                {   
+                    backgroundColor: '#adffe5',
+                    fill: false,
+                    label: 'Dagiliga ägg',
+                    data: entries.map(e => e.eggs)
+                }
+            ]
+        }
+    });
 }
 
 function fetchDiaryEntries() {
@@ -20,16 +37,25 @@ function fetchDiaryEntries() {
         toISODate(oneYearAgo),
         toISODate(today)
     );
+    response.then(
+        r => {
+            console.log(r);
+            return r.json;
+        }
+    ).then(entries => displayChart(entries))
 }
 
 async function fetchEntries(start, end) {
     const host = window.location.origin;
-    const response = await fetch(host + "/diary/entries?from=" + start + "&to=" + end,
-     {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-     });
+    // const response = await fetch(host + "/diary/entries?from=" + start + "&to=" + end,
+    //  {
+    //     method: 'GET',
+    //     headers: { 'Accept': 'application/json' }
+    //  });
 
+    const data = [{"eggs":6,"timestamp":1574977754934},{"eggs":7,"timestamp":1574893748527},{"eggs":5,"timestamp":1574632510021},{"eggs":2,"timestamp":1573593347407},{"eggs":6,"timestamp":1572818173386},{"eggs":5,"timestamp":1572468610972}]
+    const response = {};
+    response.json = data;
     return response;
 }
 
