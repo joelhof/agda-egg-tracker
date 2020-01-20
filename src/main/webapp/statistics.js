@@ -1,4 +1,5 @@
 import Chart from 'chart.js';
+import '@vaadin/vaadin-text-field';
 
 window.addEventListener('load', () => {
      //initUI();
