@@ -17,7 +17,7 @@ function displayChart(entries) {
         .reduce(averager, {sum: 0.0, count: 0});
     var average = averageAcc.sum / averageAcc.count;
     console.log('init statistics ui');
-    console.log('Average: ', average);
+    updateMean(averageAcc);
     var ctx = document.getElementById("egg-chart");
     var chart = new Chart(ctx, {
         type: 'bar',
@@ -74,6 +74,11 @@ async function fetchEntries(start, end) {
     const response = {};
     response.json = () => data;
     return response;
+}
+
+function updateMean(avergaAccumulator) {
+    const meanField = document.querySelector('#mean');
+    meanField.textContent = avergaAccumulator.sum / avergaAccumulator.count;
 }
 
 function toISODate(date) {
