@@ -101,7 +101,7 @@ function fetchDiaryEntries() {
         .then(errorHandler())
         .then(r => r.json())
         .then(entries => {
-            console.log("Succes!", entries);
+            console.log("Success!", entries);
             const currentCount = entries
                 .map(entry => entry.eggs)
                 .find(eggs => eggs);

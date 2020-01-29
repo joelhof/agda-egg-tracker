@@ -2,7 +2,7 @@ import Chart from 'chart.js';
 import '@vaadin/vaadin-text-field';
 
 window.addEventListener('load', () => {
-     //initUI();
+     initControls();
      fetchDiaryEntries();
 });
 
@@ -34,12 +34,25 @@ function displayChart(entries) {
                 },
                 {
                     backgroundColor: '',
-                    label: '10-dagars medelvärde',
+                    label: 'Rullande 7-dagars medelvärde',
                     type: 'line',
                     data: []
                 }
             ]
         }
+    });
+}
+
+function initControls() {
+    const startDateField = document.querySelector('#startdate');
+    startDateField.addEventListener('change', e => {
+        const startDate = startDateField.value;
+        console.log('start date changed', startDate);
+    });
+    const endDateField = document.querySelector('#enddate');
+    endDateField.addEventListener('change', e => {
+        const endDate = endDateField.value;
+        console.log('end date changed', endDate);
     });
 }
 
