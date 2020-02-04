@@ -1,10 +1,13 @@
 import Chart from 'chart.js';
 import '@vaadin/vaadin-text-field';
 
+let currentPeriod;
+
 window.addEventListener('load', () => {
      initControls();
      fetchDiaryEntries();
 });
+
 
 function displayChart(entries) {
 
@@ -44,12 +47,20 @@ function displayChart(entries) {
 }
 
 function initControls() {
+    const today = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    currentPeriod = new Object();
+    currentPeriod['startDate'] = toISODate(oneYearAgo);
+    currentPeriod['endDate'] = toISODate(today)
     const startDateField = document.querySelector('#startdate');
+    startDateField.value = currentPeriod.startDate;
     startDateField.addEventListener('change', e => {
         const startDate = startDateField.value;
         console.log('start date changed', startDate);
     });
     const endDateField = document.querySelector('#enddate');
+    endDateField.value = currentPeriod.endDate;
     endDateField.addEventListener('change', e => {
         const endDate = endDateField.value;
         console.log('end date changed', endDate);
@@ -58,14 +69,9 @@ function initControls() {
 
 function fetchDiaryEntries() {
 
-    // Fetch diary entries for the "selected" time period.
-    // For now, fetch the last 12 months.
-    const today = new Date();
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
     const response = fetchEntries(
-        toISODate(oneYearAgo),
-        toISODate(today)
+        currentPeriod.startDate,
+        currentPeriod.endDate
     );
     response.then(r => r.json())
             .then(entries => {
@@ -77,15 +83,15 @@ function fetchDiaryEntries() {
 
 async function fetchEntries(start, end) {
     const host = window.location.origin;
-    // const response = await fetch(host + "/diary/entries?from=" + start + "&to=" + end,
-    //  {
-    //     method: 'GET',
-    //     headers: { 'Accept': 'application/json' }
-    //  });
+    const response = await fetch(host + "/diary/entries?from=" + start + "&to=" + end,
+     {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+     });
 
-    const data = [{"eggs":6,"timestamp":1574977754934},{"eggs":7,"timestamp":1574893748527},{"eggs":5,"timestamp":1574632510021},{"eggs":2,"timestamp":1573593347407},{"eggs":6,"timestamp":1572818173386},{"eggs":5,"timestamp":1572468610972}]
-    const response = {};
-    response.json = () => data;
+    //const data = [{"eggs":6,"timestamp":1574977754934},{"eggs":7,"timestamp":1574893748527},{"eggs":5,"timestamp":1574632510021},{"eggs":2,"timestamp":1573593347407},{"eggs":6,"timestamp":1572818173386},{"eggs":5,"timestamp":1572468610972}]
+    //const response = {};
+    //response.json = () => data;
     return response;
 }
 
