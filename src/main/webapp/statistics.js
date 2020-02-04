@@ -21,6 +21,16 @@ function displayChart(entries) {
         .reduce(averager, {sum: 0.0, count: 0});
     console.log('init statistics ui');
     updateMean(averageAcc);
+    const movingAverager = (value, index, entries) => {
+        var start = (index - 6) < 0 ? 0 : (index - 6);
+        var previousWeek = entries.slice(start, index + 1)
+            .reduce(averager, {sum: 0.0, count: 0});
+        console.log(start, previousWeek);
+        return previousWeek.sum / previousWeek.count;
+    };
+    var movingAverage = entries
+        .map(e => e.eggs)
+        .map(movingAverager);
     var ctx = document.getElementById("egg-chart");
     chart = new Chart(ctx, {
         type: 'bar',
@@ -38,7 +48,7 @@ function displayChart(entries) {
                     backgroundColor: '',
                     label: 'Rullande 7-dagars medelvärde',
                     type: 'line',
-                    data: []
+                    data: movingAverage
                 }
             ]
         }
