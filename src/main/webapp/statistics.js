@@ -20,12 +20,11 @@ function displayChart(entries) {
     var averageAcc = entries.map(e => e.eggs)
         .reduce(averager, {sum: 0.0, count: 0});
     console.log('init statistics ui');
-    updateMean(averageAcc);
+    updateStatistics(averageAcc);
     const movingAverager = (value, index, entries) => {
         var start = (index - 6) < 0 ? 0 : (index - 6);
         var previousWeek = entries.slice(start, index + 1)
             .reduce(averager, {sum: 0.0, count: 0});
-        console.log(start, previousWeek);
         return previousWeek.sum / previousWeek.count;
     };
     var movingAverage = entries
@@ -80,28 +79,40 @@ function initChart() {
 }
 
 function initControls() {
-    const today = new Date();
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    currentPeriod = new Object();
-    currentPeriod['startDate'] = toISODate(oneYearAgo);
-    currentPeriod['endDate'] = toISODate(today);8
-    const startDateField = document.querySelector('#startdate');
-    startDateField.value = currentPeriod.startDate;
-    startDateField.addEventListener('change', e => {
-        const startDate = startDateField.value;
-        currentPeriod.startDate = startDate;
-        fetchDiaryEntries(currentPeriod);
-        console.log('start date changed', startDate);
-    });
-    const endDateField = document.querySelector('#enddate');
-    endDateField.value = currentPeriod.endDate;
-    endDateField.addEventListener('change', e => {
-        const endDate = endDateField.value;
-        currentPeriod.endDate = endDate;
-        fetchDiaryEntries(currentPeriod);
-        console.log('end date changed', endDate);
-    });
+    initAppState();
+    initStartDateField();
+    initEndDateField();
+
+    function initEndDateField() {
+        const endDateField = document.querySelector('#enddate');
+        endDateField.value = currentPeriod.endDate;
+        endDateField.addEventListener('change', e => {
+            const endDate = endDateField.value;
+            currentPeriod.endDate = endDate;
+            fetchDiaryEntries(currentPeriod);
+            console.log('end date changed', endDate);
+        });
+    }
+
+    function initStartDateField() {
+        const startDateField = document.querySelector('#startdate');
+        startDateField.value = currentPeriod.startDate;
+        startDateField.addEventListener('change', e => {
+            const startDate = startDateField.value;
+            currentPeriod.startDate = startDate;
+            fetchDiaryEntries(currentPeriod);
+            console.log('start date changed', startDate);
+        });
+    }
+
+    function initAppState() {
+        const today = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        currentPeriod = new Object();
+        currentPeriod['startDate'] = toISODate(oneYearAgo);
+        currentPeriod['endDate'] = toISODate(today);
+    }
 }
 
 function fetchDiaryEntries(period) {
@@ -132,7 +143,9 @@ async function fetchEntries(start, end) {
     return response;
 }
 
-function updateMean(avergaAccumulator) {
+function updateStatistics(avergaAccumulator) {
+    const sumField = document.querySelector('#sum');
+    sumField.textContent = avergaAccumulator.sum;
     const meanField = document.querySelector('#mean');
     meanField.textContent = avergaAccumulator.sum / avergaAccumulator.count;
 }
