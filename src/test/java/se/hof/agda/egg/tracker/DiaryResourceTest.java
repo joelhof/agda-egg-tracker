@@ -59,18 +59,18 @@ public class DiaryResourceTest {
         }
     }
 
-    @Test
-    public void testPostCsv() throws IOException {
-
-        String fakeBatchFile = new String(Files.readAllBytes(
-                Paths.get("src/test/resources/batch-example.csv")
-        ));
-        given().body(fakeBatchFile)
-               .contentType(MediaType.TEXT_PLAIN)
-               .when()
-               .post("diary/entries")
-               .then().assertThat().statusCode(200);
-    }
+//    @Test
+//    public void testPostCsv() throws IOException {
+//
+//        String fakeBatchFile = new String(Files.readAllBytes(
+//                Paths.get("src/test/resources/batch-example.csv")
+//        ));
+//        given().body(fakeBatchFile)
+//               .contentType(MediaType.TEXT_PLAIN)
+//               .when()
+//               .post("diary/entries")
+//               .then().assertThat().statusCode(200);
+//    }
 
 //    @Test
 //    public void testGETDiaryEntryByDate() {
