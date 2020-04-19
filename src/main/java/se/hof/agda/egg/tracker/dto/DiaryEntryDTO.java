@@ -32,4 +32,11 @@ public class DiaryEntryDTO {
         this.eggs = eggs;
     }
 
+    @Override
+    public String toString() {
+        return "DiaryEntryDTO{" +
+                "timestamp=" + timestamp +
+                ", eggs=" + eggs +
+                '}';
+    }
 }
