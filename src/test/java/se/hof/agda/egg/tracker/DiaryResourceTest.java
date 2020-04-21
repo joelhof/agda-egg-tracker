@@ -24,13 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Transactional
 public class DiaryResourceTest {
 
-    @Container
-    private static final PostgreSQLContainer postgreSQLContainer =
-            new PostgreSQLContainer()
-                    .withDatabaseName("diary")
-                    .withUsername("username-test")
-                    .withPassword("agda");
-
     @Inject
     AgroalDataSource dataSource;
 
