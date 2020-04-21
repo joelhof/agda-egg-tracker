@@ -1,17 +1,15 @@
 package se.hof.agda.egg.tracker;
 
 import io.agroal.api.AgroalDataSource;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,10 +19,17 @@ import java.time.Instant;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Testcontainers
 @QuarkusTest
 @Transactional
-@QuarkusTestResource(H2DatabaseTestResource.class)
 public class DiaryResourceTest {
+
+    @Container
+    private static final PostgreSQLContainer postgreSQLContainer =
+            new PostgreSQLContainer()
+                    .withDatabaseName("diary")
+                    .withUsername("username-test")
+                    .withPassword("agda");
 
     @Inject
     AgroalDataSource dataSource;
