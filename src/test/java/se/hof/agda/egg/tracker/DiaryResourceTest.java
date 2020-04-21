@@ -10,6 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -57,18 +58,18 @@ public class DiaryResourceTest {
         }
     }
 
-//    @Test
-//    public void testPostCsv() throws IOException {
-//
-//        String fakeBatchFile = new String(Files.readAllBytes(
-//                Paths.get("src/test/resources/batch-example.csv")
-//        ));
-//        given().body(fakeBatchFile)
-//               .contentType(MediaType.TEXT_PLAIN)
-//               .when()
-//               .post("diary/entries")
-//               .then().assertThat().statusCode(200);
-//    }
+    @Test
+    public void testPostCsv() throws IOException {
+
+        String fakeBatchFile = new String(Files.readAllBytes(
+                Paths.get("src/test/resources/batch-example.csv")
+        ));
+        given().body(fakeBatchFile)
+               .contentType(MediaType.TEXT_PLAIN)
+               .when()
+               .post("diary/entries")
+               .then().assertThat().statusCode(200);
+    }
 
 //    @Test
 //    public void testGETDiaryEntryByDate() {
