@@ -3,12 +3,16 @@ package se.hof.agda.egg.tracker;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.mapper.ObjectMapper;
+import io.restassured.mapper.ObjectMapperDeserializationContext;
+import io.restassured.mapper.ObjectMapperSerializationContext;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
 
 import javax.inject.Inject;
+import javax.json.bind.JsonbBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -16,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.Instant;
+import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +32,24 @@ public class DiaryResourceTest {
 
     @Inject
     AgroalDataSource dataSource;
+
+    private static ObjectMapper jsonbObjectMapper;
+
+    @BeforeAll
+    public static void setup() {
+        jsonbObjectMapper = new ObjectMapper() {
+            @Override
+            public Object deserialize(ObjectMapperDeserializationContext context) {
+                return JsonbBuilder.create().fromJson(context.getDataToDeserialize().asInputStream(),
+                                                      context.getType());
+            }
+
+            @Override
+            public Object serialize(ObjectMapperSerializationContext objectMapperSerializationContext) {
+                return null;
+            }
+        };
+    }
 
     @Test
     public void testPOSTDiaryEntry() throws IOException, SQLException {
@@ -64,11 +87,21 @@ public class DiaryResourceTest {
         String fakeBatchFile = new String(Files.readAllBytes(
                 Paths.get("src/test/resources/batch-example.csv")
         ));
-        given().body(fakeBatchFile)
-               .contentType(MediaType.TEXT_PLAIN)
-               .when()
-               .post("diary/entries")
-               .then().assertThat().statusCode(200);
+        BatchResponseDTO expectedResponse = new BatchResponseDTO();
+        expectedResponse.setFailed(Collections.emptyList());
+        expectedResponse.setEggsReported(28);
+
+        BatchResponseDTO actualResponse = given().body(fakeBatchFile)
+                                                 .contentType(MediaType.TEXT_PLAIN)
+                                                 .when()
+                                                 .post("diary/entries")
+                                                 .then().assertThat().statusCode(200)
+                                                 .and().extract().as(BatchResponseDTO.class, jsonbObjectMapper);
+        assertEquals(expectedResponse.getEggsReported(),
+                     actualResponse.getEggsReported(),
+                     "Number of eggs reported should match");
+        assertEquals(expectedResponse.getFailed().size(),
+                     actualResponse.getFailed().size());
     }
 
 //    @Test
