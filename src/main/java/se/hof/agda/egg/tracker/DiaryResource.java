@@ -27,6 +27,7 @@ public class DiaryResource {
 
     public static final String INSERT_DIARY_ENTRY = "INSERT INTO diary.entries (eggs, datetime)" +
             "values (?,?)";
+
     @Inject
     AgroalDataSource eggDataSource;
 
@@ -77,7 +78,8 @@ public class DiaryResource {
         return response;
     }
 
-    private List<DiaryEntryDTO> fetchEntriesByInterval(@QueryParam("from") String fromString, @QueryParam("to") String toString) {
+    private List<DiaryEntryDTO> fetchEntriesByInterval(@QueryParam("from") String fromString,
+                                                       @QueryParam("to") String toString) {
         LocalDate from = LocalDate.parse(fromString, DateTimeFormatter.ISO_DATE);
         LocalDate to = LocalDate.parse(toString, DateTimeFormatter.ISO_DATE);
         String selectLatestEntry =
@@ -107,7 +109,7 @@ public class DiaryResource {
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
         System.out.println(date);
         String sql = "SELECT * FROM diary.entries" +
-                " WHERE date(datetime) =?" +
+                " WHERE date(datetime)=?" +
                 " ORDER BY datetime DESC";
         try (
                 Connection dbConn = eggDataSource.getConnection();
