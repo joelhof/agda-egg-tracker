@@ -10,11 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
-import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 
 import javax.inject.Inject;
 import javax.json.bind.JsonbBuilder;
-import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +20,6 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -110,25 +107,27 @@ public class DiaryResourceTest {
     @Test
     public void testGETDiaryEntryByDate() {
         try {
-            setupDb();
+            long expectedTimestamp = 1573470192000L;
+            int expectedEggCount = 3;
+            insertEntryIntoDb(expectedEggCount, Instant.ofEpochMilli(expectedTimestamp));
 
             given().accept(ContentType.JSON)
                    .when().get("diary/entries?date=2019-11-11")
                    .then().assertThat().statusCode(200)
-                   .and().body("[0].eggs", equalTo(3))
-                   .body("[0].timestamp", equalTo(1573470192000L));
+                   .and().body("[0].eggs", equalTo(expectedEggCount))
+                   .body("[0].timestamp", equalTo(expectedTimestamp));
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private void setupDb() throws SQLException {
+    private void insertEntryIntoDb(int eggs, Instant timestamp) throws SQLException {
         String insertData = "INSERT INTO diary.entries VALUES(?,?)";
         try (Connection dbConn = dataSource.getConnection();
              PreparedStatement ps = dbConn.prepareStatement(insertData)) {
-            ps.setInt(1, 3);
+            ps.setInt(1, eggs);
             ps.setTimestamp(2,
-                            Timestamp.from(Instant.ofEpochMilli(1573470192000L)));
+                            Timestamp.from(timestamp));
             ps.executeUpdate();
         }
     }
