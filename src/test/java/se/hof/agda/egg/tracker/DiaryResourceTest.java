@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
@@ -115,6 +116,27 @@ public class DiaryResourceTest {
                    .when().get("diary/entries?date=2019-11-11")
                    .then().assertThat().statusCode(200)
                    .and().body("[0].eggs", equalTo(expectedEggCount))
+                   .body("[0].timestamp", equalTo(expectedTimestamp));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testGetEntriesByInterval() {
+        try {
+            // GIVEN 2 entries the same day, only the latest is returned
+            insertEntryIntoDb(3, Instant.ofEpochMilli(1573470193000L));
+            insertEntryIntoDb(6, Instant.ofEpochMilli(1573471193000L));
+            long expectedTimestamp = 1573471193000L;
+            int expectedEggCount = 6;
+            int expectedNrOfEntries = 1;
+
+            given().accept(ContentType.JSON)
+                   .when().get("diary/entries?from=2019-11-10&to=2020-11-10")
+                   .then().assertThat().statusCode(200)
+                   .and().body("$.size()", is(expectedNrOfEntries))
+                   .body("[0].eggs", is(expectedEggCount))
                    .body("[0].timestamp", equalTo(expectedTimestamp));
         } catch (SQLException e) {
             e.printStackTrace();
