@@ -6,10 +6,7 @@ import io.restassured.http.ContentType;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
 
@@ -30,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
 @QuarkusTest
+@Tag("testcontainer")
 public class DiaryResourceTest {
 
     public static final long MOST_RECENT_ENTRY = 1573471193000L;
