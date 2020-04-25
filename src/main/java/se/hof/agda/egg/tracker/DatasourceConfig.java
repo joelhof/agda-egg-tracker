@@ -33,9 +33,10 @@ public class DatasourceConfig implements ConfigSource {
                 break;
             //case "test":
             default:
-                properties.put("quarkus.datasource.driver", "org.h2.Driver");
-                properties.put("quarkus.datasource.url", "jdbc:h2:tcp://localhost/mem:dev");
-                properties.put("quarkus.datasource.username", "username-dev");
+                properties.put("quarkus.datasource.driver",
+                               "org.testcontainers.jdbc.ContainerDatabaseDriver");
+                properties.put("quarkus.datasource.url", "jdbc:tc:postgresql:9.6.8:///diary");
+                properties.put("quarkus.datasource.username", "username-test");
                 properties.put("quarkus.datasource.password", "agda");
         }
     }
