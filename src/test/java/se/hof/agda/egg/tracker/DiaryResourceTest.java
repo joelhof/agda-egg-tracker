@@ -6,7 +6,9 @@ import io.restassured.http.ContentType;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
@@ -30,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 public class DiaryResourceTest {
 
+    public static final long MOST_RECENT_ENTRY = 1573471193000L;
+
     @Inject
     AgroalDataSource dataSource;
 
@@ -51,7 +55,17 @@ public class DiaryResourceTest {
         };
     }
 
+    @AfterEach
+    void cleanUpDb() throws SQLException {
+        try (Connection dbConn = dataSource.getConnection();
+             PreparedStatement ps = dbConn.prepareStatement(
+                     "DELETE FROM diary.entries")) {
+            ps.executeUpdate();
+        }
+    }
+
     @Test
+    @DisplayName("POST a diary entry")
     public void testPOSTDiaryEntry() throws IOException, SQLException {
 
         String validDiaryEntry = new String(Files.readAllBytes(
@@ -82,6 +96,7 @@ public class DiaryResourceTest {
     }
 
     @Test
+    @DisplayName("POST a batch of diary entries")
     public void testPostCsv() throws IOException {
 
         String fakeBatchFile = new String(Files.readAllBytes(
@@ -106,6 +121,7 @@ public class DiaryResourceTest {
     }
 
     @Test
+    @DisplayName("GET diary entries for a single day")
     public void testGETDiaryEntryByDate() {
         try {
             long expectedTimestamp = 1573470192000L;
@@ -123,12 +139,13 @@ public class DiaryResourceTest {
     }
 
     @Test
+    @DisplayName("GET diary entries in a date interval")
     public void testGetEntriesByInterval() {
         try {
             // GIVEN 2 entries the same day, only the latest is returned
             insertEntryIntoDb(3, Instant.ofEpochMilli(1573470193000L));
-            insertEntryIntoDb(6, Instant.ofEpochMilli(1573471193000L));
-            long expectedTimestamp = 1573471193000L;
+            insertEntryIntoDb(6, Instant.ofEpochMilli(MOST_RECENT_ENTRY));
+            long expectedTimestamp = MOST_RECENT_ENTRY;
             int expectedEggCount = 6;
             int expectedNrOfEntries = 1;
 
