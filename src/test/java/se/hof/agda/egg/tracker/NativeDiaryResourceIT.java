@@ -1,8 +1,8 @@
 package se.hof.agda.egg.tracker;
 
-import io.quarkus.test.junit.SubstrateTest;
+import io.quarkus.test.junit.NativeImageTest;
 
-@SubstrateTest
+@NativeImageTest
 public class NativeDiaryResourceIT extends DiaryResourceTest {
 
     // Execute the same tests but in native mode.
