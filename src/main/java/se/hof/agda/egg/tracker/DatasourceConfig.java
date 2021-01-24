@@ -31,13 +31,19 @@ public class DatasourceConfig implements ConfigSource {
 //                properties.put("quarkus.datasource.username", "dev");
 //                properties.put("quarkus.datasource.password", "agda");
                 break;
-            //case "test":
+//            case "test":
+//                properties.put("quarkus.datasource.jdbc.driver",
+//                           "org.testcontainers.jdbc.ContainerDatabaseDriver");
+//                properties.put("quarkus.datasource.jdbc.url", "jdbc:tc:postgresql:9.6.8:///diary");
+//                properties.put("quarkus.datasource.username", "username-test");
+//                properties.put("quarkus.datasource.password", "agda");
+//                break;
             default:
-                properties.put("quarkus.datasource.driver",
-                               "org.testcontainers.jdbc.ContainerDatabaseDriver");
-                properties.put("quarkus.datasource.url", "jdbc:tc:postgresql:9.6.8:///diary");
-                properties.put("quarkus.datasource.username", "username-test");
-                properties.put("quarkus.datasource.password", "agda");
+//                properties.put("quarkus.datasource.jdbc.driver",
+//                               "org.testcontainers.jdbc.ContainerDatabaseDriver");
+//                properties.put("quarkus.datasource.jdbc.url", "jdbc:tc:postgresql:9.6.8:///diary");
+//                properties.put("quarkus.datasource.username", "username-test");
+//                properties.put("quarkus.datasource.password", "agda");
         }
     }
 
@@ -52,9 +58,10 @@ public class DatasourceConfig implements ConfigSource {
                     + dbUri.getPath()
                     + "?sslmode=require";
 
-            properties.put("quarkus.datasource.url", dbUrl);
+            properties.put("quarkus.datasource.jdbc.url", dbUrl);
             properties.put("quarkus.datasource.username", username);
             properties.put("quarkus.datasource.password", password);
+
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -78,7 +85,7 @@ public class DatasourceConfig implements ConfigSource {
     @Override
     public Set<String> getPropertyNames() {
         return new HashSet<>(
-                Arrays.asList("quarkus.datasource.url",
+                Arrays.asList("quarkus.datasource.jdbc.url",
                               "quarkus.datasource.username",
                               "quarkus.datasource.password"));
     }

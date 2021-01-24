@@ -6,18 +6,15 @@
   <artifactId>egg-tracker-monolith</artifactId>
   <version>1.0-SNAPSHOT</version>
   <properties>
-    <surefire-plugin.version>2.22.0</surefire-plugin.version>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <quarkus.version>1.11.0.Final</quarkus.version>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <failOnMissingWebXml>false</failOnMissingWebXml>
+    <quarkus.version>1.11.0.Final</quarkus.version>
+    <surefire-plugin.version>2.22.0</surefire-plugin.version>
     <test.container.version>1.14.0</test.container.version>
   </properties>
-
-  <packaging>war</packaging>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -38,7 +35,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jsonb</artifactId>
     </dependency>
-    <!-- Database stuff -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-flyway</artifactId>
@@ -51,8 +47,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jdbc-postgresql</artifactId>
     </dependency>
-
-    <!-- Test -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -81,7 +75,6 @@
       <version>${test.container.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
   <build>
     <plugins>
@@ -106,18 +99,11 @@
           </systemProperties>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <!-- Use the latest released version:
-        https://repo1.maven.org/maven2/com/github/eirslett/frontend-maven-plugin/ -->
         <version>1.7.6</version>
-        <configuration>
-          <workingDirectory>src/main/webapp</workingDirectory>
-        </configuration>
         <executions>
-
           <execution>
             <id>install node and npm</id>
             <goals>
@@ -127,7 +113,6 @@
               <nodeVersion>v10.14.1</nodeVersion>
             </configuration>
           </execution>
-
           <execution>
             <id>npm install</id>
             <goals>
@@ -137,24 +122,23 @@
               <arguments>install</arguments>
             </configuration>
           </execution>
-
           <execution>
             <id>webpack build</id>
+            <phase>generate-resources</phase>
             <goals>
               <goal>npm</goal>
             </goals>
             <configuration>
               <arguments>run prod</arguments>
             </configuration>
-            <!-- optional: the default phase is "generate-resources" -->
-            <phase>generate-resources</phase>
           </execution>
         </executions>
+        <configuration>
+          <workingDirectory>src/main/webapp</workingDirectory>
+        </configuration>
       </plugin>
-
     </plugins>
   </build>
-
   <profiles>
     <profile>
       <id>native</id>
