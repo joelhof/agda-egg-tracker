@@ -38,6 +38,9 @@ module.exports = ({ mode }) => {
                     __dirname, '../../../', 'target', 'classes', 'META-INF', 'resources'
                     )
          },
-         devtool: mode === 'development' ? 'source-map' : 'none'
+        optimization: {
+            usedExports: true,
+        },
+        devtool: mode === 'development' ? 'source-map' : 'none'
     };
 };
