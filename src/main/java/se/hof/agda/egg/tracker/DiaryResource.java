@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.Arrays.stream;
 
@@ -215,7 +216,21 @@ public class DiaryResource {
     }
 
     private BatchValidationResult validateMetadata(String[] metaData) {
-        return BatchValidationResult.V1;
+        try {
+            if (metaData.length == 1 || metaData.length == 2) {
+                LocalDate from = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
+                return BatchValidationResult.V1;
+            }
+
+            String[] v2Schema = new String[]{"Timestamp", "Eggs", "Event"};
+            if (metaData.length == 3 && IntStream.range(0, v2Schema.length)
+                                                 .allMatch(pos -> v2Schema[pos].equalsIgnoreCase(metaData[pos]))) {
+                return BatchValidationResult.V2;
+            }
+        } catch (Exception e) {
+            LOG.error("Unable to parse batch file");
+        }
+        return BatchValidationResult.INVALID;
     }
 
     private BatchResponseDTO batchInsertEntries(List<DiaryEntryDTO> batch) {
