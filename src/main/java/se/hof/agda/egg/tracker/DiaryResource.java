@@ -1,6 +1,7 @@
 package se.hof.agda.egg.tracker;
 
 import io.agroal.api.AgroalDataSource;
+import org.jboss.logging.Logger;
 import se.hof.agda.egg.tracker.dto.BatchResponseDTO;
 import se.hof.agda.egg.tracker.dto.DiaryEntryDTO;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,14 +26,13 @@ import static java.util.Arrays.stream;
 @Path("diary")
 public class DiaryResource {
 
+    private static final Logger LOG = Logger.getLogger(DiaryResource.class);
+
     public static final String INSERT_DIARY_ENTRY = "INSERT INTO diary.entries (eggs, datetime)" +
             "values (?,?)";
 
     @Inject
     AgroalDataSource eggDataSource;
-
-//    @Inject
-//    Flyway flyway;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -39,6 +40,7 @@ public class DiaryResource {
     @Path("/entry")
     public String createDiaryEntry(DiaryEntryDTO body) {
         System.out.println("Payload: " + body.toString());
+        LOG.info("Payload: " + body.toString());
         try (
                 Connection dbConnection = eggDataSource.getConnection();
                 PreparedStatement ps = dbConnection.prepareStatement(INSERT_DIARY_ENTRY)) {
@@ -138,6 +140,12 @@ public class DiaryResource {
         return response;
     }
 
+    private enum BatchValidationResult {
+        INVALID,
+        V1,
+        V2
+    }
+
     /**
      * POST a CSV-file with egg counts. First line must be start date and
      * end date, in ISO-format.
@@ -156,20 +164,39 @@ public class DiaryResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
     public BatchResponseDTO addEntriesFromFile(String csvBody) {
-        System.out.println("Batch file recieved:" + csvBody);
+        LOG.info("Batch file recieved:" + csvBody);
         String[] lines = csvBody.split("\\r?\\n");
         String[] metaData = lines[0].split(",");
+
+        BatchValidationResult validation = validateMetadata(metaData);
+
+        switch (validation) {
+            case V1:
+                return batchInsertEntries(toDiaryEntriesV1(lines, metaData[0]));
+            case V2:
+                // intentional fall-through
+            case INVALID:
+                throw new WebApplicationException(
+                        "Invalid CSV schema.",
+                        Response.Status.BAD_REQUEST);
+        }
+
+        return batchInsertEntries(Collections.EMPTY_LIST);
+    }
+
+    private List<DiaryEntryDTO> toDiaryEntriesV1(String[] lines, String metaDatum) {
+        List<DiaryEntryDTO> batch;
         List<Integer> eggCounts = stream(lines)
                 .skip(1)
                 .map(s -> s.trim().replace(",", ""))
                 .map(s -> s.isEmpty() ? null : Integer.valueOf(s))
                 .collect(Collectors.toList());
 
-        LocalDate startDate = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
+        LocalDate startDate = LocalDate.parse(metaDatum, DateTimeFormatter.ISO_DATE);
         //LocalDate endDate = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
 
         AtomicInteger dateCounter = new AtomicInteger(0);
-        List<DiaryEntryDTO> batch = eggCounts.stream()
+        batch = eggCounts.stream()
                  .map(count -> {
                      LocalDate date = startDate.plusDays(
                              dateCounter.getAndIncrement());
@@ -184,8 +211,11 @@ public class DiaryResource {
                      return null;
                  }).filter(Objects::nonNull)
                  .collect(Collectors.toList());
+        return batch;
+    }
 
-        return batchInsertEntries(batch);
+    private BatchValidationResult validateMetadata(String[] metaData) {
+        return BatchValidationResult.V1;
     }
 
     private BatchResponseDTO batchInsertEntries(List<DiaryEntryDTO> batch) {
