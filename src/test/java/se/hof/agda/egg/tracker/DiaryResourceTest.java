@@ -168,4 +168,28 @@ public class DiaryResourceTest {
             ps.executeUpdate();
         }
     }
+
+    @Test
+    @DisplayName("POST a batch of diary entries using v2 format")
+    public void testPostCsvV2() throws IOException {
+
+        String fakeBatchFile = new String(Files.readAllBytes(
+                Paths.get("src/test/resources/batch-v2-example.csv")
+        ));
+        BatchResponseDTO expectedResponse = new BatchResponseDTO();
+        expectedResponse.setFailed(Collections.emptyList());
+        expectedResponse.setEggsReported(23);
+
+        BatchResponseDTO actualResponse = given().body(fakeBatchFile)
+                                                 .contentType(MediaType.TEXT_PLAIN)
+                                                 .when()
+                                                 .post("diary/entries")
+                                                 .then().assertThat().statusCode(200)
+                                                 .and().extract().as(BatchResponseDTO.class, jsonbObjectMapper);
+        assertEquals(expectedResponse.getEggsReported(),
+                     actualResponse.getEggsReported(),
+                     "Number of eggs reported should match");
+        assertEquals(expectedResponse.getFailed().size(),
+                     actualResponse.getFailed().size());
+    }
 }

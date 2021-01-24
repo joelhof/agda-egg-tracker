@@ -10,14 +10,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.*;
+import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -175,7 +173,7 @@ public class DiaryResource {
             case V1:
                 return batchInsertEntries(toDiaryEntriesV1(lines, metaData[0]));
             case V2:
-                // intentional fall-through
+                return batchInsertEntries(toDiaryEntriesV2(lines, metaData));
             case INVALID:
                 throw new WebApplicationException(
                         "Invalid CSV schema.",
@@ -185,8 +183,25 @@ public class DiaryResource {
         return batchInsertEntries(Collections.EMPTY_LIST);
     }
 
+    private List<DiaryEntryDTO> toDiaryEntriesV2(String[] lines, String[] metaData) {
+        return stream(lines)
+                .skip(1)
+                .map(line -> line.split(",", -1))
+                .map(columns -> {
+                    LOG.info(Arrays.toString(columns));
+                    DiaryEntryDTO result = new DiaryEntryDTO();
+                    if (!columns[1].isEmpty()) {
+                        result.setEggs(Integer.parseInt(columns[1]));
+                    }
+                    result.setTimestamp(LocalDate.parse(columns[0], DateTimeFormatter.ISO_DATE)
+                                                 .atStartOfDay()
+                                                 .toInstant(ZoneOffset.UTC)
+                                                 .toEpochMilli());
+                    return result;
+                }).collect(Collectors.toList());
+    }
+
     private List<DiaryEntryDTO> toDiaryEntriesV1(String[] lines, String metaDatum) {
-        List<DiaryEntryDTO> batch;
         List<Integer> eggCounts = stream(lines)
                 .skip(1)
                 .map(s -> s.trim().replace(",", ""))
@@ -197,7 +212,7 @@ public class DiaryResource {
         //LocalDate endDate = LocalDate.parse(metaData[1], DateTimeFormatter.ISO_DATE);
 
         AtomicInteger dateCounter = new AtomicInteger(0);
-        batch = eggCounts.stream()
+        return eggCounts.stream()
                  .map(count -> {
                      LocalDate date = startDate.plusDays(
                              dateCounter.getAndIncrement());
@@ -212,13 +227,12 @@ public class DiaryResource {
                      return null;
                  }).filter(Objects::nonNull)
                  .collect(Collectors.toList());
-        return batch;
     }
 
     private BatchValidationResult validateMetadata(String[] metaData) {
         try {
             if (metaData.length == 1 || metaData.length == 2) {
-                LocalDate from = LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
+                LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);
                 return BatchValidationResult.V1;
             }
 
@@ -228,7 +242,7 @@ public class DiaryResource {
                 return BatchValidationResult.V2;
             }
         } catch (Exception e) {
-            LOG.error("Unable to parse batch file");
+            LOG.error("Invalid batch file headers: " + Arrays.toString(metaData));
         }
         return BatchValidationResult.INVALID;
     }
