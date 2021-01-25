@@ -27,8 +27,8 @@ public class DiaryResource {
 
     private static final Logger LOG = Logger.getLogger(DiaryResource.class);
 
-    public static final String INSERT_DIARY_ENTRY = "INSERT INTO diary.entries (eggs, datetime)" +
-            "values (?,?)";
+    public static final String INSERT_DIARY_ENTRY = "INSERT INTO diary.entries (eggs, datetime, event)" +
+            "values (?,?,?)";
 
     @Inject
     AgroalDataSource eggDataSource;
@@ -38,7 +38,7 @@ public class DiaryResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/entry")
     public String createDiaryEntry(DiaryEntryDTO body) {
-        System.out.println("Payload: " + body.toString());
+        //System.out.println("Payload: " + body.toString());
         LOG.info("Payload: " + body.toString());
         try (
                 Connection dbConnection = eggDataSource.getConnection();
@@ -57,6 +57,7 @@ public class DiaryResource {
         ps.setInt(1, body.getEggs());
         Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(body.getTimestamp()));
         ps.setTimestamp(2, timestamp);
+        ps.setString(3, body.getEvent());
     }
 
     @GET
@@ -83,11 +84,11 @@ public class DiaryResource {
         LocalDate from = LocalDate.parse(fromString, DateTimeFormatter.ISO_DATE);
         LocalDate to = LocalDate.parse(toString, DateTimeFormatter.ISO_DATE);
         String selectLatestEntry =
-                " SELECT DISTINCT ON (date(datetime)) datetime, eggs" +
+                " SELECT DISTINCT ON (date(datetime)) datetime, eggs, event" +
                 " FROM diary.entries" +
                 " ORDER BY date(datetime) ASC, datetime DESC";
         String selectEntriesInInterval = "" +
-                "SELECT datetime, eggs " +
+                "SELECT datetime, eggs, event " +
                 "FROM (" + selectLatestEntry + ") AS latestEntry" +
                 " WHERE date(datetime) >=? AND date(datetime) <=?";
         try (
@@ -107,7 +108,7 @@ public class DiaryResource {
 
     private List<DiaryEntryDTO> fetchEntriesByDate(@QueryParam("date") String dateString) {
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
-        System.out.println(date);
+        //System.out.println(date);
         String sql = "SELECT * FROM diary.entries" +
                 " WHERE date(datetime)=?" +
                 " ORDER BY datetime DESC";
@@ -130,10 +131,11 @@ public class DiaryResource {
         while (rs.next()) {
             int eggs = rs.getInt("eggs");
             Timestamp ts = rs.getTimestamp("datetime");
-            System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
+            //System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
             DiaryEntryDTO entry = new DiaryEntryDTO();
             entry.setEggs(eggs);
             entry.setTimestamp(ts.getTime());
+            entry.setEvent(rs.getString("event"));
             response.add(entry);
         }
         return response;

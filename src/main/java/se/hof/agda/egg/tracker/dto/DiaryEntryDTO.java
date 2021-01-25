@@ -11,6 +11,8 @@ public class DiaryEntryDTO {
 
     int eggs;
 
+    String event;
+
     /**
      * Required for JSON-B auto-magic instantiation.
      */
@@ -32,11 +34,20 @@ public class DiaryEntryDTO {
         this.eggs = eggs;
     }
 
+    public String getEvent() {
+        return event;
+    }
+
+    public void setEvent(String event) {
+        this.event = event;
+    }
+
     @Override
     public String toString() {
         return "DiaryEntryDTO{" +
                 "timestamp=" + timestamp +
                 ", eggs=" + eggs +
+                ", event=" + event +
                 '}';
     }
 }

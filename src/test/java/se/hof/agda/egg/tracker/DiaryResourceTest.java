@@ -124,13 +124,17 @@ public class DiaryResourceTest {
         try {
             long expectedTimestamp = 1573470192000L;
             int expectedEggCount = 3;
-            insertEntryIntoDb(expectedEggCount, Instant.ofEpochMilli(expectedTimestamp));
+            String expectedEvent = "This is a test, Ingen skötsel?";
+            insertEntryIntoDb(expectedEggCount,
+                              Instant.ofEpochMilli(expectedTimestamp),
+                              expectedEvent);
 
             given().accept(ContentType.JSON)
                    .when().get("diary/entries?date=2019-11-11")
                    .then().assertThat().statusCode(200)
                    .and().body("[0].eggs", equalTo(expectedEggCount))
-                   .body("[0].timestamp", equalTo(expectedTimestamp));
+                   .body("[0].timestamp", equalTo(expectedTimestamp))
+                   .body("[0].event", equalTo(expectedEvent));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -159,12 +163,17 @@ public class DiaryResourceTest {
     }
 
     private void insertEntryIntoDb(int eggs, Instant timestamp) throws SQLException {
-        String insertData = "INSERT INTO diary.entries VALUES(?,?)";
+        insertEntryIntoDb(eggs, timestamp, null);
+    }
+
+    private void insertEntryIntoDb(int eggs, Instant timestamp, String event) throws SQLException {
+        String insertData = "INSERT INTO diary.entries (eggs, datetime, event) VALUES(?,?,?)";
         try (Connection dbConn = dataSource.getConnection();
              PreparedStatement ps = dbConn.prepareStatement(insertData)) {
             ps.setInt(1, eggs);
             ps.setTimestamp(2,
                             Timestamp.from(timestamp));
+            ps.setString(3, event);
             ps.executeUpdate();
         }
     }
