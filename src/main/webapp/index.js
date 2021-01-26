@@ -13,6 +13,8 @@ function initUI() {
   notification.renderer = function(root, n) {  
     // Check if there is a content generated with the previous renderer call not to recreate it.
     if (root.firstElementChild) {
+      const header = root.firstElementChild.getElementsByTagName('b')[0];
+      header.textContent = n.header;
       const detailedMessage = root.firstElementChild.getElementsByTagName('a')[0];
       detailedMessage.textContent = n.detailMessage;
       return;
@@ -80,6 +82,7 @@ function initUI() {
 }
 
 function showNotification(notification, header, detailedMessage) {
+    console.log("Show notification, ", header, detailedMessage);
     notification.header = header;
     notification.detailMessage = detailedMessage;
     notification.open();
