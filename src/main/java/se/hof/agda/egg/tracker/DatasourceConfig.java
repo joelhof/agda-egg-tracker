@@ -1,12 +1,15 @@
 package se.hof.agda.egg.tracker;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.jboss.logging.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
 public class DatasourceConfig implements ConfigSource {
+
+    private static final Logger LOG = Logger.getLogger(DiaryResource.class);
 
     Map<String, String> properties = new HashMap<>();
 
@@ -31,6 +34,7 @@ public class DatasourceConfig implements ConfigSource {
 //                properties.put("quarkus.datasource.username", "dev");
 //                properties.put("quarkus.datasource.password", "agda");
                 break;
+
 //            case "test":
 //                properties.put("quarkus.datasource.jdbc.driver",
 //                           "org.testcontainers.jdbc.ContainerDatabaseDriver");
@@ -39,6 +43,7 @@ public class DatasourceConfig implements ConfigSource {
 //                properties.put("quarkus.datasource.password", "agda");
 //                break;
             default:
+                LOG.info("Using profile: " + profile);
 //                properties.put("quarkus.datasource.jdbc.driver",
 //                               "org.testcontainers.jdbc.ContainerDatabaseDriver");
 //                properties.put("quarkus.datasource.jdbc.url", "jdbc:tc:postgresql:9.6.8:///diary");
@@ -48,6 +53,7 @@ public class DatasourceConfig implements ConfigSource {
     }
 
     private void parseHerokuDatabaseUrl(String databaseUrl) {
+        LOG.info("Setting database url from Heroku environment variable...");
         try {
             URI dbUri = new URI(databaseUrl);
             String username = dbUri.getUserInfo().split(":")[0];
@@ -60,6 +66,7 @@ public class DatasourceConfig implements ConfigSource {
 
             properties.put("quarkus.datasource.jdbc.url", dbUrl);
             properties.put("quarkus.datasource.username", username);
+            LOG.info("Using database url: " + dbUrl + " and username " + username);
             properties.put("quarkus.datasource.password", password);
 
         } catch (URISyntaxException e) {
