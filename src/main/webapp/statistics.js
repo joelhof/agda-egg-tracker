@@ -27,10 +27,21 @@ function displayChart(entries) {
             .reduce(averager, {sum: 0.0, count: 0});
         return previousWeek.sum / previousWeek.count;
     };
-    var movingAverage = entries
+    let movingAverage = entries
         .map(e => e.eggs)
         .map(movingAverager);
-    var ctx = document.getElementById("egg-chart");
+    let ctx = document.getElementById("egg-chart");
+    let colors = entries.map(e => {
+
+        if (e.event && e.event.includes('död')) {
+            return '#000000';
+        }
+        if (e.event && e.event.includes('sjuk')) {
+            return '#eb4c34';
+        }
+        return '#adffe5';
+    }
+    );
     chart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -38,18 +49,54 @@ function displayChart(entries) {
                            .map(d => toISODate(d)),
             datasets: [
                 {   
-                    backgroundColor: '#adffe5',
+                    backgroundColor: colors,
                     fill: false,
-                    label: 'Dagiliga ägg',
+                    label: 'Dagliga ägg',
                     data: entries.map(e => e.eggs)
                 },
                 {
                     backgroundColor: '',
                     label: 'Rullande 7-dagars medelvärde',
                     type: 'line',
-                    data: movingAverage
+                    data: movingAverage,
+                    options: {
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    let label = data.datasets[tooltipItem.datasetIndex].label;
+
+                                    if (label) {
+                                        label += ': ';
+                                        label += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                                    }
+                                    return label;
+                                },
+                                footer: function(tooltipItem, data) {
+                                    return entries[tooltipItem[0].index].event || '';
+                                }
+                            }
+                        }
+                    }
                 }
             ]
+        },
+        options: {
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        let label = data.datasets[tooltipItem.datasetIndex].label;
+
+                        if (label) {
+                            label += ': ';
+                            label += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        }
+                        return label;
+                    },
+                    footer: function(tooltipItem, data) {
+                        return entries[tooltipItem[0].index].event || '';
+                    }
+                }
+            }
         }
     });
 }
@@ -64,7 +111,7 @@ function initChart() {
                 {   
                     backgroundColor: '#adffe5',
                     fill: false,
-                    label: 'Dagiliga ägg',
+                    label: 'Dagliga ägg',
                     data: []
                 },
                 {
@@ -109,14 +156,28 @@ function initControls() {
         const today = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        currentPeriod = new Object();
+        currentPeriod = {};
         currentPeriod['startDate'] = toISODate(oneYearAgo);
         currentPeriod['endDate'] = toISODate(today);
     }
 }
 
 function fetchDiaryEntries(period) {
-
+    /*displayChart([{
+        "eggs": 3,
+        "timestamp": 1611621137516,
+        "event": null
+    },
+        {
+            "eggs": 5,
+            "timestamp": 1611621137516 + 24 * 3600,
+            "event": "Brun höna hängig, sjuk"
+        },
+        {
+            "eggs": 7,
+            "timestamp": 1611621137516 + 48 * 3600,
+            "event": "Brun höna död"
+        }]);*/
     const response = fetchEntries(
         period.startDate,
         period.endDate
