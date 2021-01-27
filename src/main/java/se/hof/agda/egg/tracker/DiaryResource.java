@@ -38,8 +38,8 @@ public class DiaryResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/entry")
     public String createDiaryEntry(DiaryEntryDTO body) {
-        //System.out.println("Payload: " + body.toString());
         LOG.info("Payload: " + body.toString());
+
         try (
                 Connection dbConnection = eggDataSource.getConnection();
                 PreparedStatement ps = dbConnection.prepareStatement(INSERT_DIARY_ENTRY)) {
@@ -48,12 +48,13 @@ public class DiaryResource {
             ps.close();
             return "nr of eggs posted " + body.getEggs();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error(e);
             throw new RuntimeException("Egg diary was not updated. ", e);
         }
     }
 
     private void addDiaryEntry(DiaryEntryDTO body, PreparedStatement ps) throws SQLException {
+        LOG.debug("Adding : " + body);
         ps.setInt(1, body.getEggs());
         Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(body.getTimestamp()));
         ps.setTimestamp(2, timestamp);
@@ -108,7 +109,6 @@ public class DiaryResource {
 
     private List<DiaryEntryDTO> fetchEntriesByDate(@QueryParam("date") String dateString) {
         LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
-        //System.out.println(date);
         String sql = "SELECT * FROM diary.entries" +
                 " WHERE date(datetime)=?" +
                 " ORDER BY datetime DESC";
@@ -119,7 +119,7 @@ public class DiaryResource {
             ps.setDate(1, Date.valueOf(date));
             return mapToDTO(ps);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error(e);
             throw new RuntimeException("Could not fetch eggs for date= "
                                                + date.format(DateTimeFormatter.ISO_DATE));
         }
@@ -131,11 +131,11 @@ public class DiaryResource {
         while (rs.next()) {
             int eggs = rs.getInt("eggs");
             Timestamp ts = rs.getTimestamp("datetime");
-            //System.out.println("eggs: " + eggs + " datetime: " + ts.toString());
             DiaryEntryDTO entry = new DiaryEntryDTO();
             entry.setEggs(eggs);
             entry.setTimestamp(ts.getTime());
             entry.setEvent(rs.getString("event"));
+            LOG.debug("fetched from db: " + entry);
             response.add(entry);
         }
         return response;
@@ -170,7 +170,7 @@ public class DiaryResource {
         String[] metaData = lines[0].split(",");
 
         BatchValidationResult validation = validateMetadata(metaData);
-
+        LOG.info("Schema " + validation);
         switch (validation) {
             case V1:
                 return batchInsertEntries(toDiaryEntriesV1(lines, metaData[0]));
@@ -190,7 +190,6 @@ public class DiaryResource {
                 .skip(1)
                 .map(line -> line.split(",", -1))
                 .map(columns -> {
-                    LOG.info(Arrays.toString(columns));
                     DiaryEntryDTO result = new DiaryEntryDTO();
                     if (!columns[1].isEmpty()) {
                         result.setEggs(Integer.parseInt(columns[1]));
@@ -199,6 +198,8 @@ public class DiaryResource {
                                                  .atStartOfDay()
                                                  .toInstant(ZoneOffset.UTC)
                                                  .toEpochMilli());
+                    result.setEvent(String.join(
+                            " ", Arrays.asList(columns).subList(2, columns.length)));
                     return result;
                 }).collect(Collectors.toList());
     }
@@ -232,6 +233,7 @@ public class DiaryResource {
     }
 
     private BatchValidationResult validateMetadata(String[] metaData) {
+        LOG.info("batch schema metadata " + String.join(",", metaData));
         try {
             if (metaData.length == 1 || metaData.length == 2) {
                 LocalDate.parse(metaData[0], DateTimeFormatter.ISO_DATE);

@@ -146,7 +146,8 @@ public class DiaryResourceTest {
         try {
             // GIVEN 2 entries the same day, only the latest is returned
             insertEntryIntoDb(3, Instant.ofEpochMilli(1573470193000L));
-            insertEntryIntoDb(6, Instant.ofEpochMilli(MOST_RECENT_ENTRY));
+            String expectedEvent = "this is a test";
+            insertEntryIntoDb(6, Instant.ofEpochMilli(MOST_RECENT_ENTRY), expectedEvent);
             long expectedTimestamp = MOST_RECENT_ENTRY;
             int expectedEggCount = 6;
             int expectedNrOfEntries = 1;
@@ -156,7 +157,8 @@ public class DiaryResourceTest {
                    .then().assertThat().statusCode(200)
                    .and().body("$.size()", is(expectedNrOfEntries))
                    .body("[0].eggs", is(expectedEggCount))
-                   .body("[0].timestamp", equalTo(expectedTimestamp));
+                   .body("[0].timestamp", equalTo(expectedTimestamp))
+                   .body("[0].event", equalTo(expectedEvent));;
         } catch (SQLException e) {
             e.printStackTrace();
         }
