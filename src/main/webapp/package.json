@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "@vaadin/vaadin": "^13.0.11",
-    "chart.js": "^2.9.3"
+    "chart.js": "^2.9.4"
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.2.10",
